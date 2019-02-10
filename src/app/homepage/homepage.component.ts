@@ -63,6 +63,10 @@ export class HomepageComponent implements OnInit {
 
       forkJoin(crawlingPools)
         .subscribe((poolsData) => {
+
+          // TODO 
+          // HERE we get the POOLS data.
+          // Should continue working from this point on
           console.log(poolsData);
         });
     });
