@@ -1,5 +1,4 @@
-interface ITab {
-
+export default interface ITab {
     active: boolean;
     audible: boolean;
     autoDiscardable: boolean;

@@ -1,9 +1,11 @@
 export default interface IPool {
     name: string;
-    url: string;
-    tabAddress?: string;
-    lastBlock?: number;
+    // tabAddress?: string;
+    lastBlockUrl: string;
+    // lastBlockNumber?: number;
     lastBlockHTMLSelector?: string;
-    forToken?: string;
-    active?: boolean;
+    poolSpeedUrl?: string;
+    poolSpeedHTMLSelector?: string;
+    // forToken?: string;
+    // active?: boolean;
 }
