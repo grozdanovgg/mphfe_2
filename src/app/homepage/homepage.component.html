@@ -1,0 +1,4 @@
+<button *ngIf=!isHoppingActive
+        (click)=onStart()>start</button>
+<button *ngIf=isHoppingActive
+        (click)=onStop()>stop</button>
