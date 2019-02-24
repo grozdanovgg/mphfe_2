@@ -1,6 +1,6 @@
 export default interface IPool {
-    name: string;
-    lastBlockUrl: string;
+    name?: string;
+    lastBlockUrl?: string;
     poolSpeedUrl?: string;
     // tabAddress?: string;
     // lastBlockNumber?: number;

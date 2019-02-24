@@ -97,7 +97,7 @@ export class HomepageComponent implements OnInit {
   }
 
   private getBestPool(pools: { [key: string]: IPool }): IPool {
-    let bestPool: IPool;
+    let bestPool: IPool = { score: 0 };
     for (const key in pools) {
       if (pools.hasOwnProperty(key)) {
         const poolScore = this.calcPoolScore(pools[key], ravenToken);
