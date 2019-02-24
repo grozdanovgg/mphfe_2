@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import IPool from '../models/IPool';
 import ITab from '../models/ITab';
 
@@ -16,15 +17,15 @@ export class HomepageComponent implements OnInit {
   // Currently you have to open all the pages manually for the app to work
   pools: IPool[] = [
     {
-      name: 'ravenPool',
-      lastBlockUrl: 'https://eu.ravenminer.com/site/block?id=1425',
+      name: 'cryptopool',
+      lastBlockUrl: 'https://cryptopool.party/site/block_results?id=2013',
       // lastBlockNumber: null,
-      lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4) > a',
-      poolSpeedUrl: 'https://eu.ravenminer.com/',
-      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr > td:nth-child(5)'
+      lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4)',
+      poolSpeedUrl: 'https://cryptopool.party/',
+      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(7)'
     },
     {
-      name: 'ravenPool',
+      name: 'yiimp',
       lastBlockUrl: 'http://yiimp.eu/site/block_results?id=2588',
       // lastBlockNumber: null,
       lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4) > a',
@@ -38,12 +39,12 @@ export class HomepageComponent implements OnInit {
   ngOnInit() {
   }
 
-  onStart() {
+  onStartClick() {
     this.isHoppingActive = true;
 
     chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
 
-      const crawlingPools: Observable<void>[] = [];
+      const crawlingPools: Observable<IPool>[] = [];
 
       for (const pool of this.pools) {
         const tabFound = tabs.find(tab => {
@@ -62,21 +63,46 @@ export class HomepageComponent implements OnInit {
       }
 
       forkJoin(crawlingPools)
+        .pipe(
+          map(poolsData => {
+            return this.mergeDataByPool(poolsData);
+          })
+        )
         .subscribe((poolsData) => {
 
-          // TODO 
+          // TODO
           // HERE we get the POOLS data.
           // Should continue working from this point on
           console.log(poolsData);
+          const bestPool = this.getBestPool();
+
+          // TODO this logic
+          // this is only in idea example
+          // if(bestPool !== currentPool){
+          //   this.setActivePool(bestPool);
+          // }
         });
     });
   }
 
-  onStop() {
+  onStopClick() {
     this.isHoppingActive = false;
   }
 
-  private injectBlockCrawler(pool: IPool, tabId) {
+  private mergeDataByPool(poolsMixedData: IPool[]): { [key: string]: IPool } {
+    const savedPools = {};
+    for (const pool of poolsMixedData) {
+      if (!savedPools[pool.name]) {
+        savedPools[pool.name] = pool;
+      } else {
+        savedPools[pool.name] = { ...savedPools[pool.name], ...pool };
+      }
+    }
+
+    return savedPools;
+  }
+
+  private injectBlockCrawler(pool: IPool, tabId): Observable<IPool> {
 
     return Observable.create(observer => {
       chrome.tabs.executeScript(
@@ -94,7 +120,7 @@ export class HomepageComponent implements OnInit {
     });
   }
 
-  private injectPoolCrawler(pool: IPool, tabId) {
+  private injectPoolCrawler(pool: IPool, tabId): Observable<IPool> {
 
     return Observable.create(observer => {
 
