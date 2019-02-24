@@ -74,7 +74,7 @@ export class HomepageComponent implements OnInit {
           // HERE we get the POOLS data.
           // Should continue working from this point on
           console.log(poolsData);
-          const bestPool = this.getBestPool();
+          const bestPool = this.getBestPool(poolsData);
 
           // TODO this logic
           // this is only in idea example
@@ -87,6 +87,29 @@ export class HomepageComponent implements OnInit {
 
   onStopClick() {
     this.isHoppingActive = false;
+  }
+
+  private getBestPool(pools: { [key: string]: IPool }): IPool {
+    let bestPool: IPool;
+    for (const key in pools) {
+      if (pools.hasOwnProperty(key)) {
+        const poolScore = this.calcPoolScore(pools[key]);
+        if (poolScore > bestPool.score) {
+          bestPool = pools[key];
+        }
+      }
+    }
+
+    return bestPool;
+  }
+
+  private calcPoolScore(pool: IPool): number {
+
+
+
+    // let score: number;
+
+
   }
 
   private mergeDataByPool(poolsMixedData: IPool[]): { [key: string]: IPool } {
