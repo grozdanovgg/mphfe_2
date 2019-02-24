@@ -8,4 +8,8 @@ export default interface IPool {
     poolSpeedHTMLSelector?: string;
     // forToken?: string;
     // active?: boolean;
+    poolSpeed?: string;
+    blockNumber?: string;
+    averageBlockInterval?: string;
+    score?: number;
 }
