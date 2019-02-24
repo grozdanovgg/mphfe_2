@@ -1,25 +1,24 @@
 import IToken from './IToken';
+import PoolConfig from './PoolConfig';
 
 // TODO use the class pool, and methods inside it instead of the interface IPool
 
 export default class Pool {
-    lastBlockHTMLSelector: string;
-    poolSpeedUrl: string;
-    poolSpeedHTMLSelector: string;
-    poolSpeedGh: number;
-    blockNumber: string;
-    averageBlockIntervalMin: number;
-    score: number;
+    config = new PoolConfig();
 
     constructor(
-        readonly name: string,
-        public lastBlockUrl: string,
-    ) { }
+        name: string,
+        lastBlockUrl: string,
+        private propsToAssign?: PoolConfig
+    ) {
+        this.config.name = name;
+        this.config.lastBlockUrl = lastBlockUrl;
+        this.config = { ...this.config, ...propsToAssign };
+    }
 
-
-    setAverageBlockInterval(token: IToken) {
+    public setAverageBlockInterval(token: IToken) {
         try {
-            this.averageBlockIntervalMin = token.globalHashrateGh * token.averageBlockIntervalMin / this.poolSpeedGh;
+            this.config.averageBlockIntervalMin = token.globalHashrateGh * token.averageBlockIntervalMin / this.config.poolSpeedGh;
         } catch (error) {
             return false;
         }

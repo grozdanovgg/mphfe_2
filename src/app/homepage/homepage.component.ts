@@ -1,8 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
-import IPool from '../models/IPool';
+import Pool from '../models/Pool';
 import ITab from '../models/ITab';
+import IToken from '../models/IToken';
+import PoolConfig from '../models/PoolConfig';
+
+const ravenToken = {
+  name: 'RavenCoin',
+  averageBlockIntervalMin: 1,
+  globalHashrateGh: 3260
+};
+
 
 @Component({
   selector: 'app-homepage',
@@ -15,28 +24,29 @@ export class HomepageComponent implements OnInit {
   // hard code them temporaly
 
   // Currently you have to open all the pages manually for the app to work
-  pools: IPool[] = [
-    {
-      name: 'cryptopool',
-      lastBlockUrl: 'https://cryptopool.party/site/block_results?id=2013',
-      // lastBlockNumber: null,
-      lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4)',
-      poolSpeedUrl: 'https://cryptopool.party/',
-      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(7)'
-    },
-    {
-      name: 'yiimp',
-      lastBlockUrl: 'http://yiimp.eu/site/block_results?id=2588',
-      // lastBlockNumber: null,
-      lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4) > a',
-      poolSpeedUrl: 'http://yiimp.eu/site/mining',
-      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(10) > td:nth-child(6)'
-    }
-  ];
+  pools: PoolConfig[] = [];
 
   constructor() { }
 
   ngOnInit() {
+    const poolA = new PoolConfig();
+    poolA.name = 'cryptopool';
+    poolA.lastBlockUrl = 'https://cryptopool.party/site/block_results?id=2013';
+    poolA.lastBlockHTMLSelector = '#maintable > tbody > tr:nth-child(1) > td:nth-child(4)';
+    poolA.poolSpeedUrl = 'https://cryptopool.party/';
+    poolA.poolSpeedHTMLSelector = '#maintable1 > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(7)';
+    poolA.blockTimeHtmlSelector = '#maintable > tbody > tr:nth-child(1) > td:nth-child(3) > b > span';
+
+    const poolB = new PoolConfig();
+    poolB.name = 'yiimp';
+    poolB.lastBlockUrl = 'http://yiimp.eu/site/block_results?id=2588';
+    poolB.lastBlockHTMLSelector = '#maintable > tbody > tr:nth-child(1) > td:nth-child(4) > a';
+    poolB.poolSpeedUrl = 'http://yiimp.eu/site/mining';
+    poolB.poolSpeedHTMLSelector = '#maintable1 > tbody:nth-child(2) > tr:nth-child(10) > td:nth-child(6)';
+    poolB.blockTimeHtmlSelector = '#maintable > tbody > tr:nth-child(1) > td:nth-child(3) > b > span';
+
+    this.pools.push(poolA);
+    this.pools.push(poolB);
   }
 
   onStartClick() {
@@ -44,7 +54,7 @@ export class HomepageComponent implements OnInit {
 
     chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
 
-      const crawlingPools: Observable<IPool>[] = [];
+      const crawlingPools: Observable<PoolConfig>[] = [];
 
       for (const pool of this.pools) {
         const tabFound = tabs.find(tab => {
@@ -89,12 +99,12 @@ export class HomepageComponent implements OnInit {
     this.isHoppingActive = false;
   }
 
-  private getBestPool(pools: { [key: string]: IPool }): IPool {
-    let bestPool: IPool;
+  private getBestPool(pools: { [key: string]: Pool }): Pool {
+    let bestPool = new Pool('', '');
     for (const key in pools) {
       if (pools.hasOwnProperty(key)) {
-        const poolScore = this.calcPoolScore(pools[key]);
-        if (poolScore > bestPool.score) {
+        const poolScore = this.calcPoolScore(pools[key], ravenToken);
+        if (poolScore > bestPool.config.score) {
           bestPool = pools[key];
         }
       }
@@ -103,31 +113,33 @@ export class HomepageComponent implements OnInit {
     return bestPool;
   }
 
-  private calcPoolScore(pool: IPool): number {
+  private calcPoolScore(pool: Pool, token: IToken): number {
 
+    pool.setAverageBlockInterval(token);
 
-
+    // pool.averageBlockIntervalMin
     // let score: number;
     return 1;
 
 
   }
 
-  private mergeDataByPool(poolsMixedData: IPool[]): { [key: string]: IPool } {
+  private mergeDataByPool(poolsMixedData: PoolConfig[]): { [key: string]: Pool } {
     const savedPools = {};
     for (const pool of poolsMixedData) {
       if (!savedPools[pool.name]) {
         savedPools[pool.name] = pool;
       } else {
-        savedPools[pool.name] = { ...savedPools[pool.name], ...pool };
+
+        savedPools[pool.name] = new Pool(pool.name, pool.lastBlockUrl, pool);
       }
+
     }
 
     return savedPools;
   }
 
-  private injectBlockCrawler(pool: IPool, tabId): Observable<IPool> {
-
+  private injectBlockCrawler(pool: PoolConfig, tabId): Observable<PoolConfig> {
     return Observable.create(observer => {
       chrome.tabs.executeScript(
         tabId,
@@ -136,7 +148,6 @@ export class HomepageComponent implements OnInit {
         },
         result => {
           chrome.tabs.sendMessage(tabId, pool, response => {
-
             observer.next(response);
             observer.complete();
           });
@@ -144,7 +155,7 @@ export class HomepageComponent implements OnInit {
     });
   }
 
-  private injectPoolCrawler(pool: IPool, tabId): Observable<IPool> {
+  private injectPoolCrawler(pool: PoolConfig, tabId): Observable<PoolConfig> {
 
     return Observable.create(observer => {
 
@@ -155,7 +166,6 @@ export class HomepageComponent implements OnInit {
         },
         result => {
           chrome.tabs.sendMessage(tabId, pool, response => {
-            // console.log(response.poolSpeed);
             observer.next(response);
             observer.complete();
           });

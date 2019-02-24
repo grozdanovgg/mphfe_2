@@ -1,8 +1,8 @@
-import IPool from './IPool';
+import Pool from './Pool';
 
 export default interface IToken {
     name: string;
-    pools?: IPool[];
+    pools?: Pool[];
     averageBlockIntervalMin: number;
     globalHashrateGh: number;
 }
