@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener((pool, sender, sendResponse) => {
     console.log(pool);
 
     // @ts-ignore
-    const poolSpeed = document.querySelector(pool.poolSpeedHTMLSelector).textContent;
-    pool.poolSpeed = poolSpeed;
+    const speedTextGh = document.querySelector(pool.speedHTMLSelector).textContent;
+    pool.speedTextGh = speedTextGh;
     sendResponse(pool);
 });

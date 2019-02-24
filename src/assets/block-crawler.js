@@ -8,8 +8,8 @@ chrome.runtime.onMessage.addListener((pool, sender, sendResponse) => {
 
     // @ts-ignore
     const blockNumber = document.querySelector(pool.lastBlockHTMLSelector).textContent;
-    const blockTimePassedMin = document.querySelector(pool.blockTimeHtmlSelector).textContent;
+    const blockTimePassedText = document.querySelector(pool.blockTimeHtmlSelector).textContent;
     pool.blockNumber = blockNumber;
-    pool.blockTimePassedMin = blockTimePassedMin;
+    pool.blockTimePassedText = blockTimePassedText;
     sendResponse(pool);
 });

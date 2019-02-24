@@ -28,16 +28,16 @@ export class HomepageComponent implements OnInit {
       name: 'cryptopool',
       lastBlockUrl: 'https://cryptopool.party/site/block_results?id=2013',
       lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4)',
-      poolSpeedUrl: 'https://cryptopool.party/',
-      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(7)',
+      speedUrl: 'https://cryptopool.party/',
+      speedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(5) > td:nth-child(7)',
       blockTimeHtmlSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(3) > b > span',
     },
     {
       name: 'yiimp',
       lastBlockUrl: 'http://yiimp.eu/site/block_results?id=2588',
       lastBlockHTMLSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(4) > a',
-      poolSpeedUrl: 'http://yiimp.eu/site/mining',
-      poolSpeedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(10) > td:nth-child(6)',
+      speedUrl: 'http://yiimp.eu/site/mining',
+      speedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(10) > td:nth-child(6)',
       blockTimeHtmlSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(3) > b > span',
     }
   ];
@@ -63,7 +63,7 @@ export class HomepageComponent implements OnInit {
 
       for (const pool of this.pools) {
         const poolTabFound = tabs.find(tab => {
-          return tab.url === pool.poolSpeedUrl;
+          return tab.url === pool.speedUrl;
         });
         const poolCrawlerSubscr = this.injectPoolCrawler(pool, poolTabFound.id);
         crawlingPools.push(poolCrawlerSubscr);
@@ -80,8 +80,12 @@ export class HomepageComponent implements OnInit {
           // TODO
           // HERE we get the POOLS data.
           // Should continue working from this point on
-          console.log(poolsData);
-          const bestPool = this.getBestPool(poolsData);
+          poolsData = this.sanitizePools(poolsData);
+
+          const bestPool = this.getBestPool(poolsData, ravenToken);
+          console.log(bestPool);
+          // TODO BEST POOL FOUND>
+          // CONTINUE HERE
 
           // TODO this logic
           // this is only in idea example
@@ -96,11 +100,54 @@ export class HomepageComponent implements OnInit {
     this.isHoppingActive = false;
   }
 
-  private getBestPool(pools: { [key: string]: IPool }): IPool {
+  private sanitizePools(pools: { [key: string]: IPool }) {
+    for (const key in pools) {
+      if (pools.hasOwnProperty(key)) {
+        const stringDigits = pools[key].speedTextGh.split(' ')[0];
+        pools[key].speedGh = +stringDigits;
+
+        if (pools[key].blockTimePassedText) {
+          const timeNumber = +pools[key].blockTimePassedText.match(/\d+/)[0];
+          const timePeriod = pools[key].blockTimePassedText[pools[key].blockTimePassedText.length - 1];
+          const multiplier = this.getTimeMultiplier(timePeriod);
+          pools[key].blockTimePassedMin = timeNumber * multiplier;
+        } else {
+          pools[key].blockTimePassedMin = 0;
+        }
+      }
+    }
+    return pools;
+  }
+
+
+  private getTimeMultiplier(timePeriod: string) {
+    switch (timePeriod) {
+      case '2':
+        return 7 * 24 * 60;
+
+      case 'd':
+        return 24 * 60;
+
+      case 'h':
+        return 60;
+
+      case 'm':
+        return 1;
+
+      case 's':
+        return 0.0167;
+
+      default:
+        return 0;
+    }
+
+  }
+
+  private getBestPool(pools: { [key: string]: IPool }, token: IToken): IPool {
     let bestPool: IPool = { score: 0 };
     for (const key in pools) {
       if (pools.hasOwnProperty(key)) {
-        const poolScore = this.calcPoolScore(pools[key], ravenToken);
+        const poolScore = this.calcPoolScore(pools[key], token);
         if (poolScore > bestPool.score) {
           bestPool = pools[key];
         }
@@ -112,13 +159,16 @@ export class HomepageComponent implements OnInit {
 
   private calcPoolScore(pool: IPool, token: IToken): number {
 
-    // pool.setAverageBlockInterval(token);
+    pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
+    const result = pool.blockTimePassedMin / pool.averageBlockIntervalMin;
+    // console.log(pool.blockTimePassedMin, pool.averageBlockIntervalMin);
+    return result;
+  }
 
-    // pool.averageBlockIntervalMin
-    // let score: number;
-    return 1;
+  private calcAverageBlockInterval(pool: IPool, token: IToken): number {
 
-
+    const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
+    return result;
   }
 
   private mergeDataByPool(poolsMixedData: IPool[]): { [key: string]: IPool } {

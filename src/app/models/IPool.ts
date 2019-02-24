@@ -1,17 +1,19 @@
 export default interface IPool {
     name?: string;
     lastBlockUrl?: string;
-    poolSpeedUrl?: string;
+    speedUrl?: string;
     // tabAddress?: string;
     // lastBlockNumber?: number;
     lastBlockHTMLSelector?: string;
-    poolSpeedHTMLSelector?: string;
+    speedHTMLSelector?: string;
     blockTimeHtmlSelector?: string;
     // forToken?: string;
     // active?: boolean;
-    poolSpeedGh?: number;
+    speedGh?: number;
+    speedTextGh?: string;
     blockNumber?: string;
     blockTimePassedMin?: number;
+    blockTimePassedText?: string;
     averageBlockIntervalMin?: number;
     score?: number;
 }
