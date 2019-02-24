@@ -108,6 +108,7 @@ export class HomepageComponent implements OnInit {
 
 
     // let score: number;
+    return 1;
 
 
   }
