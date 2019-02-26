@@ -54,8 +54,16 @@ export class BackgroundComponent implements OnInit {
           return tab.url === pool.speedUrl;
         });
 
-        poolTabs.push(tabFound);
-        poolTabs.push(poolTabFound);
+        if (!tabFound || !poolTabFound) {
+          console.log('NO TAB FOUND ERR - TO HANDLE');
+          console.log('Pool:');
+          console.log(pool);
+          console.log('TabFound:');
+          console.log(tabFound);
+          console.log('poolTabFound:');
+          console.log(poolTabFound);
+          return;
+        }
 
         chrome.tabs.reload(tabFound.id, null, () => {
           const blockCrawlerSubscr: Observable<IPool> = this.injectBlockCrawler(pool, tabFound.id);
@@ -79,6 +87,7 @@ export class BackgroundComponent implements OnInit {
 
             // Best pool found
             const bestPool = this.getBestPool(poolsData, ravenToken);
+            console.log(bestPool);
             if (bestPool !== this.activePool) {
               this.setActivePool(bestPool);
             }
