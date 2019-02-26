@@ -4,7 +4,6 @@ import { Observable, forkJoin } from 'rxjs';
 import IPool from '../models/IPool';
 import { map } from 'rxjs/operators';
 import IToken from '../models/IToken';
-import { setInterval } from 'timers';
 
 
 const ravenToken = {
@@ -33,7 +32,7 @@ export class BackgroundComponent implements OnInit {
         setInterval(() => {
 
           this.tickInjectScript(message.inject);
-        }, 5000);
+        }, 20000);
       }
     });
   }
@@ -50,30 +49,42 @@ export class BackgroundComponent implements OnInit {
           return tab.url === pool.speedUrl;
         });
 
-        // poolTabs.push(tabFound);
-        // poolTabs.push(poolTabFound);
+        poolTabs.push(tabFound);
+        poolTabs.push(poolTabFound);
 
-        const blockCrawlerSubscr = this.injectBlockCrawler(pool, tabFound.id);
-        const poolCrawlerSubscr = this.injectPoolCrawler(pool, poolTabFound.id);
-        crawlingPools.push(poolCrawlerSubscr);
-        crawlingPools.push(blockCrawlerSubscr);
+        let blockCrawlerSubscr;
+        let poolCrawlerSubscr;
+
+        chrome.tabs.reload(tabFound.id, null, () => {
+          console.log('RELOAD 1');
+          blockCrawlerSubscr = this.injectBlockCrawler(pool, tabFound.id);
+          crawlingPools.push(blockCrawlerSubscr);
+        });
+        chrome.tabs.reload(poolTabFound.id, null, () => {
+          console.log('RELOAD 2');
+          poolCrawlerSubscr = this.injectPoolCrawler(pool, poolTabFound.id);
+          crawlingPools.push(poolCrawlerSubscr);
+        });
       }
 
-      forkJoin(crawlingPools)
-        .pipe(map(poolsData => {
-          console.log(poolsData);
-          return this.mergeDataByPool(poolsData);
-        }))
-        .subscribe((poolsData) => {
-          poolsData = this.sanitizePools(poolsData);
-          // Best pool found
-          const bestPool = this.getBestPool(poolsData, ravenToken);
-          console.log(bestPool);
-          // console.log(poolsData);
-          if (bestPool !== this.activePool) {
-            this.setActivePool(bestPool);
-          }
-        });
+      setTimeout(() => {
+        forkJoin(crawlingPools)
+          .pipe(map(poolsData => {
+            console.log(poolsData);
+            return this.mergeDataByPool(poolsData);
+          }))
+          .subscribe((poolsData) => {
+            poolsData = this.sanitizePools(poolsData);
+            // Best pool found
+            const bestPool = this.getBestPool(poolsData, ravenToken);
+            console.log(bestPool);
+            // console.log(poolsData);
+            if (bestPool !== this.activePool) {
+              this.setActivePool(bestPool);
+            }
+          });
+      }, 10000);
+
     });
   }
 
