@@ -1,15 +1,11 @@
-// @ts-ignore
+chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 
-console.log('IN CONTENT');
-chrome.runtime.onMessage.addListener((pool, sender, sendResponse) => {
+    const blockNumber = document.querySelector(data.pool.lastBlockHTMLSelector).textContent;
+    const blockTimePassedText = document.querySelector(data.pool.blockTimeHtmlSelector).textContent;
+    data.pool.blockNumber = blockNumber;
+    data.pool.blockTimePassedText = blockTimePassedText;
 
-    console.log('RECIEVED MESSAGE');
-    console.log(pool);
-
-    // @ts-ignore
-    const blockNumber = document.querySelector(pool.lastBlockHTMLSelector).textContent;
-    const blockTimePassedText = document.querySelector(pool.blockTimeHtmlSelector).textContent;
-    pool.blockNumber = blockNumber;
-    pool.blockTimePassedText = blockTimePassedText;
-    sendResponse(pool);
+    sendResponse(data.pool);
 });
+
+

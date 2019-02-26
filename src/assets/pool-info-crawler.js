@@ -1,13 +1,7 @@
-// @ts-ignore
+chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 
-console.log('IN POOL INFO CONTENT');
-chrome.runtime.onMessage.addListener((pool, sender, sendResponse) => {
+    const speedTextGh = document.querySelector(data.pool.speedHTMLSelector).textContent;
+    data.pool.speedTextGh = speedTextGh;
 
-    console.log('RECIEVED MESSAGE');
-    console.log(pool);
-
-    // @ts-ignore
-    const speedTextGh = document.querySelector(pool.speedHTMLSelector).textContent;
-    pool.speedTextGh = speedTextGh;
-    sendResponse(pool);
+    sendResponse(data.pool);
 });
