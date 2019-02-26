@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import ITab from '../models/ITab';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable, forkJoin, Subscription } from 'rxjs';
 import IPool from '../models/IPool';
 import { map } from 'rxjs/operators';
 import IToken from '../models/IToken';
@@ -20,7 +20,8 @@ const ravenToken = {
 export class BackgroundComponent implements OnInit {
 
   activePool: IPool;
-
+  reloadIntevalSec = 20 * 1000;
+  bufferCrawlSec = 10 * 1000;
   constructor() { }
 
   ngOnInit() {
@@ -32,58 +33,57 @@ export class BackgroundComponent implements OnInit {
         setInterval(() => {
 
           this.tickInjectScript(message.inject);
-        }, 20000);
+        }, this.reloadIntevalSec);
       }
     });
   }
 
-  private tickInjectScript(pools: any) {
+  private tickInjectScript(pools: IPool[]) {
     chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
+
       const crawlingPools: Observable<IPool>[] = [];
       const poolTabs: ITab[] = [];
+
       for (const pool of pools) {
-        const tabFound = tabs.find(tab => {
+        const tabFound: ITab = tabs.find(tab => {
+
           return tab.url === pool.lastBlockUrl;
         });
-        const poolTabFound = tabs.find(tab => {
+        const poolTabFound: ITab = tabs.find(tab => {
+
           return tab.url === pool.speedUrl;
         });
 
         poolTabs.push(tabFound);
         poolTabs.push(poolTabFound);
 
-        let blockCrawlerSubscr;
-        let poolCrawlerSubscr;
-
         chrome.tabs.reload(tabFound.id, null, () => {
-          console.log('RELOAD 1');
-          blockCrawlerSubscr = this.injectBlockCrawler(pool, tabFound.id);
+          const blockCrawlerSubscr: Observable<IPool> = this.injectBlockCrawler(pool, tabFound.id);
           crawlingPools.push(blockCrawlerSubscr);
         });
         chrome.tabs.reload(poolTabFound.id, null, () => {
-          console.log('RELOAD 2');
-          poolCrawlerSubscr = this.injectPoolCrawler(pool, poolTabFound.id);
+          const poolCrawlerSubscr: Observable<IPool> = this.injectPoolCrawler(pool, poolTabFound.id);
           crawlingPools.push(poolCrawlerSubscr);
         });
       }
 
       setTimeout(() => {
         forkJoin(crawlingPools)
-          .pipe(map(poolsData => {
-            console.log(poolsData);
+          .pipe(map((poolsData: IPool[]) => {
+
             return this.mergeDataByPool(poolsData);
           }))
-          .subscribe((poolsData) => {
+          .subscribe((poolsData: { [key: string]: IPool }) => {
+
             poolsData = this.sanitizePools(poolsData);
+
             // Best pool found
             const bestPool = this.getBestPool(poolsData, ravenToken);
-            console.log(bestPool);
-            // console.log(poolsData);
             if (bestPool !== this.activePool) {
               this.setActivePool(bestPool);
             }
           });
-      }, 10000);
+      }, this.bufferCrawlSec);
 
     });
   }
@@ -159,26 +159,25 @@ export class BackgroundComponent implements OnInit {
       default:
         return 0;
     }
-
   }
-
-
 
   private calcPoolScore(pool: IPool, token: IToken): IPool {
 
     pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
     pool.score = pool.blockTimePassedMin / pool.averageBlockIntervalMin;
-    // console.log(pool.blockTimePassedMin, pool.averageBlockIntervalMin);
+
     return pool;
   }
 
   private calcAverageBlockInterval(pool: IPool, token: IToken): number {
 
     const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
+
     return result;
   }
 
   private injectBlockCrawler(pool: IPool, tabId): Observable<IPool> {
+
     return Observable.create(observer => {
       chrome.tabs.executeScript(
         tabId,
@@ -197,7 +196,6 @@ export class BackgroundComponent implements OnInit {
   private injectPoolCrawler(pool: IPool, tabId): Observable<IPool> {
 
     return Observable.create(observer => {
-
       chrome.tabs.executeScript(
         tabId,
         {
