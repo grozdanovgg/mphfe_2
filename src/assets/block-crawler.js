@@ -7,5 +7,3 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 
     sendResponse(data.pool);
 });
-
-

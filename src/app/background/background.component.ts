@@ -1,15 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import ITab from '../models/ITab';
-import { Observable, forkJoin, Subscription } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import IPool from '../models/IPool';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import IToken from '../models/IToken';
+import IDashboard from '../models/IDashboard';
 
-
+// TODO get ths info dynamically
 const ravenToken = {
   name: 'RavenCoin',
   averageBlockIntervalMin: 1,
   globalHashrateGh: 3260
+};
+
+// TODO do not hardcode this
+const dashboardController: IDashboard = {
+  url: 'https://simplemining.net/account/rigs',
+  checkboxAllRigsselector: '//*[@id="data-table-rigs"]/thead/tr/th[1]/div[1]/input'
 };
 
 @Component({
@@ -20,8 +27,10 @@ const ravenToken = {
 export class BackgroundComponent implements OnInit {
 
   activePool: IPool;
-  reloadIntevalSec = 20 * 1000;
-  bufferCrawlSec = 10 * 1000;
+  reloadIntevalSec = 10 * 1000;
+  bufferCrawlSec = 5 * 1000;
+  dashboardControllerInjected = false;
+
   constructor() { }
 
   ngOnInit() {
@@ -30,6 +39,7 @@ export class BackgroundComponent implements OnInit {
 
       if (message.inject) {
         this.tickInjectScript(message.inject);
+
         setInterval(() => {
 
           this.tickInjectScript(message.inject);
@@ -46,11 +56,9 @@ export class BackgroundComponent implements OnInit {
 
       for (const pool of pools) {
         const tabFound: ITab = tabs.find(tab => {
-
           return tab.url === pool.lastBlockUrl;
         });
         const poolTabFound: ITab = tabs.find(tab => {
-
           return tab.url === pool.speedUrl;
         });
 
@@ -66,11 +74,12 @@ export class BackgroundComponent implements OnInit {
         }
 
         chrome.tabs.reload(tabFound.id, null, () => {
-          const blockCrawlerSubscr: Observable<IPool> = this.injectBlockCrawler(pool, tabFound.id);
+          const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/block-crawler.js', pool, tabFound.id);
           crawlingPools.push(blockCrawlerSubscr);
         });
+
         chrome.tabs.reload(poolTabFound.id, null, () => {
-          const poolCrawlerSubscr: Observable<IPool> = this.injectPoolCrawler(pool, poolTabFound.id);
+          const poolCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/pool-info-crawler.js', pool, poolTabFound.id);
           crawlingPools.push(poolCrawlerSubscr);
         });
       }
@@ -90,15 +99,60 @@ export class BackgroundComponent implements OnInit {
             console.log(bestPool);
             if (bestPool !== this.activePool) {
               this.setActivePool(bestPool);
+              this.activePool = bestPool;
             }
+          }, error => {
+            console.log(error);
           });
       }, this.bufferCrawlSec);
 
     });
   }
 
-  private setActivePool(pool: IPool): void {
+  private setActivePool(pool: IPool): any {
 
+    this.findTabWithUrl(dashboardController.url)
+      // .pipe(
+      //   tap((tab: ITab) => { }),
+      //   tap(() => { })
+      // )
+      .subscribe((tab: ITab) => {
+
+        if (!this.dashboardControllerInjected) {
+          this.injectScriptInTab('assets/dashboard-controller.js', pool, tab.id)
+            .subscribe(() => {
+              this.dashboardControllerInjected = true;
+            });
+        } else {
+          this.sendDataToTab(tab.id, { pool, dashboardController });
+        }
+      });
+  }
+
+  private sendDataToTab(tabId, data: {}): Observable<void> {
+    return Observable.create(observer => {
+      chrome.tabs.sendMessage(tabId, data, response => {
+        observer.next(response);
+        observer.complete();
+      });
+    });
+  }
+
+  private findTabWithUrl(url): Observable<ITab> {
+    return Observable.create(observer => {
+      chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
+        const tabFound: ITab = tabs.find(tab => {
+          return tab.url === url;
+        });
+        if (tabFound) {
+
+          observer.next(tabFound);
+          observer.complete();
+        } else {
+          observer.error('No dasboard url found');
+        }
+      });
+    });
   }
 
   private getBestPool(pools: { [key: string]: IPool }, token: IToken): IPool {
@@ -185,36 +239,16 @@ export class BackgroundComponent implements OnInit {
     return result;
   }
 
-  private injectBlockCrawler(pool: IPool, tabId): Observable<IPool> {
+  private injectScriptInTab(scriptSrc: string, data: {}, tabId): Observable<IPool> {
 
     return Observable.create(observer => {
       chrome.tabs.executeScript(
         tabId,
         {
-          file: 'assets/block-crawler.js'
+          file: scriptSrc
         },
         result => {
-          chrome.tabs.sendMessage(tabId, { pool }, response => {
-            observer.next(response);
-            observer.complete();
-          });
-        });
-    });
-  }
-
-  private injectPoolCrawler(pool: IPool, tabId): Observable<IPool> {
-
-    return Observable.create(observer => {
-      chrome.tabs.executeScript(
-        tabId,
-        {
-          file: 'assets/pool-info-crawler.js'
-        },
-        result => {
-          chrome.tabs.sendMessage(tabId, { pool }, response => {
-            observer.next(response);
-            observer.complete();
-          });
+          this.sendDataToTab(tabId, data);
         });
     });
   }
