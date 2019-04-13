@@ -1,4 +1,4 @@
-import { ConnectListener } from "./test";
+import { ConnectListener } from './test';
 
 const connect = new ConnectListener();
 

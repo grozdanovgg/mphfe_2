@@ -15,6 +15,7 @@ gulp.task('ng-build', function (cb) {
 });
 
 gulp.task('watch', function () {
+    // TODO - build the code, before start watching it
     gulp.watch('src/*.*', function () {
         gulp.series(['ng-build', 'bundle']);
     });
