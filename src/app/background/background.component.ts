@@ -74,7 +74,7 @@ export class BackgroundComponent implements OnInit {
         }
 
         chrome.tabs.reload(tabFound.id, null, () => {
-          const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/block-crawler.js', pool, tabFound.id);
+          const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/block.crawler.js', pool, tabFound.id);
           crawlingPools.push(blockCrawlerSubscr);
         });
 

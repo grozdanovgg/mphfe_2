@@ -7,6 +7,7 @@
     "notifications",
     "activeTab",
     "storage",
+    "background",
     "http://*/",
     "https://*/",
     "http://*/*",
@@ -21,5 +22,13 @@
     "default_title": "Pool hopping",
     "default_popup": "index.html#/"
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "web_accessible_resources": [
+    "es2015-polyfills.js.map",
+    "main.js.map",
+    "polyfills.js.map",
+    "runtime.js.map",
+    "styles.js.map",
+    "vendor.js.map"
+  ]
 }
