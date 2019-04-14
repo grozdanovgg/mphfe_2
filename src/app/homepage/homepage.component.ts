@@ -1,8 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
-import ITab from '../models/ITab';
-import IToken from '../models/IToken';
 import IPool from '../models/IPool';
 
 
