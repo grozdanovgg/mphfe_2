@@ -1,12 +1,19 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es6",
+    "module": "es2015",
     "sourceMap": false,
-    "types": ["@types/chrome"],
-    "typeRoots": ["node_modules/@types"],
+    "types": [
+      "@types/chrome"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
     "moduleResolution": "node",
-    "lib": ["es2017", "dom"]
+    "lib": [
+      "es2017",
+      "dom"
+    ]
   }
 }

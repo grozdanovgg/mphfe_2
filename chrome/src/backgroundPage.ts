@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
 import ITab from './models/ITab';
 import { Observable, forkJoin } from 'rxjs';
 import IPool from './models/IPool';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import IToken from './models/IToken';
 import IDashboard from './models/IDashboard';
 
@@ -21,7 +20,7 @@ const dashboardController: IDashboard = {
 
 console.log('IN BACKGROUND');
 
-export class BackgroundComponent implements OnInit {
+export class BackgroundComponent {
 
     activePool: IPool;
     reloadIntevalSec = 10 * 1000;
