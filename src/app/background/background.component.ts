@@ -74,7 +74,7 @@ export class BackgroundComponent implements OnInit {
         }
 
         chrome.tabs.reload(tabFound.id, null, () => {
-          const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/block.crawler.js', pool, tabFound.id);
+          const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab('assets/block-crawler.js', pool, tabFound.id);
           crawlingPools.push(blockCrawlerSubscr);
         });
 
@@ -119,7 +119,7 @@ export class BackgroundComponent implements OnInit {
       .subscribe((tab: ITab) => {
 
         if (!this.dashboardControllerInjected) {
-          this.injectScriptInTab('assets/dashboard-controller.js', pool, tab.id)
+          this.injectScriptInTab('scripts/dashboard-controller.js', pool, tab.id)
             .subscribe(() => {
               this.dashboardControllerInjected = true;
             });
