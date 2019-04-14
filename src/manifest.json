@@ -14,7 +14,9 @@
     "*://*/*"
   ],
   "background": {
-    "page": "index.html#/background",
+    "scripts": [
+      "backgroundPage.js"
+    ],
     "persistent": false
   },
   "browser_action": {
