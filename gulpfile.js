@@ -1,22 +1,7 @@
-var { task, watch, series } = require('gulp');
+var { task, watch, series, parallel } = require('gulp');
 // this will automatically register to gulp tasks: ln:bundle, ln:minify and returns them as gulp.series( 'ln:bundle', 'ln:minify' )
 var bundle = require('@lernetz/gulp-typescript-bundle');
 var exec = require('child_process').exec;
-
-task('ng-build', function (cb) {
-    console.log('running ng build...');
-    exec('ng build', function (err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
-        console.log(err);
-        cb(err);
-        return true;
-    });
-});
-
-task('watch', function () {
-    watch(['src/app/**/*.ts'], series(['ng-build', 'bundle-all']));
-});
 
 task('bundle-block-crawler', bundle({
     dest: 'dist/mphfe/assets',
@@ -44,9 +29,13 @@ task('bundle-dasboard-controller', bundle({
     }
 }));
 
+task('watch', function () {
+    watch(['src/app/**/*.ts'], series(['bundle-all']));
+});
+
 task('bundle-all', series(['bundle-block-crawler', 'bundle-dasboard-controller']));
 
-task('default', series(['ng-build', 'bundle-all', 'watch']));
+task('default', series(['bundle-all', 'watch']));
 
 // TODO remove unnecesary ts files from assets. Then dont heed to be put in assets in source code anymore.
 // They might be in every other folder.
