@@ -30,7 +30,7 @@ task('bundle-dasboard-controller', bundle({
 }));
 
 task('watch', function () {
-    watch(['src/app/**/*.ts'], series(['bundle-all']));
+    watch(['src/**/*.ts', 'src/**/*.html', 'src/**/*.scss', 'src/**/*.js'], series(['bundle-all']));
 });
 
 task('bundle-all', series(['bundle-block-crawler', 'bundle-dasboard-controller']));
