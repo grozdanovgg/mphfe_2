@@ -2,10 +2,11 @@
   "name": "mphfe",
   "version": "0.0.0",
   "scripts": {
-    "start": "gulp default",
+    "start": "ng build --aot --watch & gulp bundle-all",
     "watch": "gulp watch",
+    "gulp": "gulp",
     "ng": "ng",
-    "ng-watch:": "ng build --aot --watch",
+    "ng-watch": "ng build --aot --watch",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
