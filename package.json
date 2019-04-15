@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng build --aot --watch",
+    "start": "npm run clean && ng build --aot --watch & npm run build:chrome",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "clean": "rimraf dist",
     "build:chrome": "webpack --config webpack.config.js",
-    "build": "npm run clean && ng build && npm run build:chrome"
+    "build": "npm run clean && ng build --aot && npm run build:chrome"
   },
   "private": true,
   "dependencies": {
