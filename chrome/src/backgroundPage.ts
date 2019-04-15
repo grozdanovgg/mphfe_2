@@ -45,7 +45,7 @@ export class BackgroundComponent {
     }
 
     private tickInjectScript(pools: IPool[]) {
-        chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
+        chrome.tabs.query({}, (tabs: ITab[]) => {
 
             const crawlingPools: Observable<IPool>[] = [];
             const poolTabs: ITab[] = [];
