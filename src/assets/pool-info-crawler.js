@@ -1,7 +1,9 @@
 chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
+  const speedTextGh = document.querySelector(data.speedHTMLSelector)
+    .textContent;
+  data.speedTextGh = speedTextGh;
 
-    const speedTextGh = document.querySelector(data.pool.speedHTMLSelector).textContent;
-    data.pool.speedTextGh = speedTextGh;
+  sendResponse(data);
 
-    sendResponse(data.pool);
+  return true;
 });
