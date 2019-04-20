@@ -15,7 +15,7 @@ const ravenToken = {
 // TODO do not hardcode this
 const dashboardController: IDashboard = {
     url: 'https://simplemining.net/account/rigs',
-    checkboxAllRigsselector: '//*[@id="data-table-rigs"]/thead/tr/th[1]/div[1]/input'
+    checkboxAllRigsSelector: '//*[@id="data-table-rigs"]/thead/tr/th[1]/div[1]/input'
 };
 
 console.log('IN BACKGROUND');

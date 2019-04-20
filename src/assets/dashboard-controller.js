@@ -8,6 +8,6 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 
     // sendResponse(data.pool);
 
-    const checkboxAllRigsselector = document.querySelector(data.dashboardController.checkboxAllRigsselector);
-    console.log(checkboxAllRigsselector);
+    const checkboxAllRigsSelector = document.querySelector(data.dashboardController.checkboxAllRigsSelector);
+    console.log(checkboxAllRigsSelector);
 });
