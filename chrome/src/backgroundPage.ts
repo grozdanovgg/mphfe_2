@@ -22,7 +22,7 @@ console.log('IN BACKGROUND');
 
 export class BackgroundComponent {
     activePool: IPool;
-    reloadIntevalSec = 60 * 1000;
+    reloadIntevalSec = 10 * 1000;
     bufferCrawlSec = 5 * 1000;
     dashboardControllerInjected = false;
 
@@ -165,24 +165,10 @@ export class BackgroundComponent {
                     observer.next(tabFound);
                     observer.complete();
                 } else {
-                    observer.error('No dasboard url found');
+                    observer.error(`Tab with url ${url} not found`);
                 }
             });
         });
-    }
-
-    private getBestPool(pools: { [key: string]: IPool }, token: IToken): IPool {
-        let bestPool: IPool = { score: 0 };
-        for (const key in pools) {
-            if (pools.hasOwnProperty(key)) {
-                pools[key] = this.calcPoolScore(pools[key], token);
-                if (pools[key].score > bestPool.score) {
-                    bestPool = pools[key];
-                }
-            }
-        }
-
-        return bestPool;
     }
 
     private sanitizePools(pools: { [key: string]: IPool }) {
@@ -242,16 +228,38 @@ export class BackgroundComponent {
         }
     }
 
+    private getBestPool(pools: { [key: string]: IPool }, token: IToken): IPool {
+        let bestPool: IPool = { score: 0 };
+        for (const key in pools) {
+            if (pools.hasOwnProperty(key)) {
+                pools[key] = this.calcPoolScore(pools[key], token);
+                if (pools[key].score > bestPool.score) {
+                    bestPool = pools[key];
+                }
+            }
+        }
+
+        // for (const key in pools) {
+        //     console.log(pools[key].name, pools[key].score);
+        // }
+
+        return bestPool;
+    }
+
     private calcPoolScore(pool: IPool, token: IToken): IPool {
         pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
-        pool.score = pool.blockTimePassedMin / pool.averageBlockIntervalMin;
+        pool.score = pool.averageBlockIntervalMin / pool.blockTimePassedMin;
 
+        console.log(pool.name, pool.blockTimePassedMin, pool.averageBlockIntervalMin);
+        console.log(pool.name, pool.score);
         return pool;
     }
 
     private calcAverageBlockInterval(pool: IPool, token: IToken): number {
         const result =
             (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
+
+        console.log(pool.name, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
 
         return result;
     }

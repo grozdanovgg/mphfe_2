@@ -12,5 +12,4 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   console.log('sending response from webpage:');
   console.log(data);
   sendResponse(data);
-  return true;
 });

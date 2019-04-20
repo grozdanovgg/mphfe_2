@@ -4,6 +4,4 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   data.speedTextGh = speedTextGh;
 
   sendResponse(data);
-
-  return true;
 });
