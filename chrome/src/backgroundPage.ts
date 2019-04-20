@@ -86,13 +86,12 @@ export class BackgroundComponent {
             setTimeout(() => {
                 forkJoin(crawlingPools)
                     .pipe(
-                        map((poolsData: IPool[]) => {
-                            return this.mergeDataByPool(poolsData);
-                        })
+                        map(this.mergeDataByPool.bind(this)),
+                        map(this.sanitizePools.bind(this))
                     )
                     .subscribe(
                         (poolsData: { [key: string]: IPool }) => {
-                            poolsData = this.sanitizePools(poolsData);
+                            // poolsData = this.sanitizePools(poolsData);
 
                             // Best pool found
                             const bestPool = this.getBestPool(poolsData, ravenToken);
@@ -104,7 +103,6 @@ export class BackgroundComponent {
                         },
                         error => {
                             console.log(error);
-                            f
                         }
                     );
             }, this.bufferCrawlSec);
