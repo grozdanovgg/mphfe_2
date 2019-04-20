@@ -15,7 +15,8 @@ const ravenToken = {
 // TODO do not hardcode this
 const dashboardController: IDashboard = {
     url: 'https://simplemining.net/account/rigs',
-    checkboxAllRigsSelector: '//*[@id="data-table-rigs"]/thead/tr/th[1]/div[1]/input'
+    checkboxAllRigsSelector: '#data-table-rigs > thead > tr > th:nth-child(1) > div.th-inner > input',
+    assignGroupBtnHtmlId: 'buttonUserGroup'
 };
 
 console.log('IN BACKGROUND');
@@ -144,7 +145,7 @@ export class BackgroundComponent {
                 if (!this.dashboardControllerInjected) {
                     this.injectScriptInTab(
                         'assets/dashboard-controller.js',
-                        pool,
+                        { pool, dashboardController },
                         tab.id
                     ).subscribe(() => {
                         this.dashboardControllerInjected = true;
@@ -157,7 +158,7 @@ export class BackgroundComponent {
 
     private findTabWithUrl(url): Observable<ITab> {
         return Observable.create(observer => {
-            chrome.tabs.query({ currentWindow: true }, (tabs: ITab[]) => {
+            chrome.tabs.query({}, (tabs: ITab[]) => {
                 const tabFound: ITab = tabs.find(tab => {
                     return tab.url === url;
                 });
