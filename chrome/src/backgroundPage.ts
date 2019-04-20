@@ -8,8 +8,8 @@ import IDashboard from './models/IDashboard';
 // TODO get ths info dynamically
 const ravenToken = {
     name: 'RavenCoin',
-    averageBlockIntervalMin: 1,
-    globalHashrateGh: 3260
+    averageBlockIntervalMin: 1.15,
+    globalHashrateGh: 13000
 };
 
 // TODO do not hardcode this
