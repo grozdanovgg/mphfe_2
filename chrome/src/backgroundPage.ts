@@ -65,6 +65,20 @@ export class BackgroundComponent {
                     return;
                 }
 
+                // function httpGetAsync(theUrl, callback) {
+                //     var xmlHttp = new XMLHttpRequest();
+                //     xmlHttp.onreadystatechange = function () {
+                //         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                //             callback(xmlHttp.responseText);
+                //     }
+                //     xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+                //     xmlHttp.send(null);
+                // }
+
+                // httpGetAsync('https://www.pickaxe.pro/site/current_results', result => {
+                //     console.log(result);
+                // });
+
                 chrome.tabs.reload(poolBlocksTab.id, null, () => {
                     const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
                         'assets/block-crawler.js',
