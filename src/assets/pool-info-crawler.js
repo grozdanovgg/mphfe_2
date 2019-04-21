@@ -10,11 +10,10 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   const tokenRowIndex = findTokenRowIndex(dataContainerNode.rows, data.token, data.pool.speedColNameIndex)
   console.log(tokenRowIndex);
 
-  const speedTextGh = document.querySelector(data.pool.speedHTMLSelector)
-    .textContent;
+  const speedTextGh = document.querySelector(data.pool.speedHTMLSelector).textContent;
   data.pool.speedTextGh = speedTextGh;
 
-  sendResponse(data);
+  sendResponse(data.pool);
 });
 
 function findTokenRowIndex(rowList, token, colIndex) {
