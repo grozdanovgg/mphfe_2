@@ -9,6 +9,7 @@ import IDashboard from './models/IDashboard';
 const ravenToken: IToken = {
     name: 'RavenCoin',
     identifiers: ['raven', 'rvn', 'ravencoin'],
+    excludeIdentifiers: ['Dark'],
     averageBlockIntervalMin: 1.15,
     globalHashrateGh: 13000
 };

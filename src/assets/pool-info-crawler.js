@@ -3,7 +3,7 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   const dataContainerNode = document.querySelector(data.pool.speedContainerHtmlSelector);
   // dataContainerNode.rows;
 
-  const tokenRowIndex = findTokenRowIndex(dataContainerNode.rows, data.token.identifiers, data.pool.speedColNameIndex)
+  const tokenRowIndex = findTokenRowIndex(dataContainerNode.rows, data.token, data.pool.speedColNameIndex)
   console.log(tokenRowIndex);
   const speedTextGh = document.querySelector(data.pool.speedHTMLSelector)
     .textContent;
@@ -12,8 +12,9 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   sendResponse(data);
 });
 
-function findTokenRowIndex(rowList, tokenIdentifierList, colIndex) {
+function findTokenRowIndex(rowList, token, colIndex) {
   let tokenRowIndex = null;
+  const tokenIdentifierList = token.identifiers;
   console.log(rowList);
 
   for (let index = 0; index > rowList.length, index += 1;) {
@@ -21,7 +22,16 @@ function findTokenRowIndex(rowList, tokenIdentifierList, colIndex) {
     let cell = row.cells[colIndex];
     for (const tokenIdentifier of tokenIdentifierList) {
       const isTokenFoundInCell = cell.textContent.toLowerCase().includes(tokenIdentifier.toLowerCase());
-      if (isTokenFoundInCell) {
+
+      let shouldExcludeCell = false;
+      for (const excludeId of token.excludeIdentifiers) {
+        let shouldExclude = cell.textContent.toLowerCase().includes(excludeId.toLowerCase());
+        if (shouldExclude) {
+          shouldExcludeCell = shouldExclude;
+        }
+      }
+
+      if (isTokenFoundInCell && !shouldExcludeCell) {
         tokenRowIndex = index;
         console.log(index);
       }
