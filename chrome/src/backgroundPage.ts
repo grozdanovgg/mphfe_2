@@ -25,7 +25,7 @@ console.log('IN BACKGROUND');
 
 export class BackgroundComponent {
     activePool: IPool;
-    reloadIntevalSec = 240 * 1000;
+    reloadIntevalSec = 30 * 1000;
     bufferCrawlSec = 5 * 1000;
     dashboardControllerInjected = false;
 
