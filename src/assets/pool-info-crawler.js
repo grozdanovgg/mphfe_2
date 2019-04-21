@@ -22,7 +22,7 @@ function findTokenRowIndex(rowList, token, colIndex) {
   const tokenIdentifierList = token.identifiers;
   console.log(rowList);
 
-  for (let index = 0; index > rowList.length, index += 1;) {
+  for (let index = 0; index < rowList.length; index += 1) {
     let row = rowList[index];
     let cell = row.cells[colIndex];
     for (const tokenIdentifier of tokenIdentifierList) {
