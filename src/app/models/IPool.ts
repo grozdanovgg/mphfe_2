@@ -5,6 +5,9 @@ export default interface IPool {
     // tabAddress?: string;
     // lastBlockNumber?: number;
     lastBlockHTMLSelector?: string;
+    speedContainerHtmlSelector?: string,
+    speedColNameIndex?: number,
+    speedColSpeedIndex?: number,
     speedHTMLSelector?: string;
     blockTimeHtmlSelector?: string;
     // forToken?: string;

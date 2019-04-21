@@ -6,8 +6,9 @@ import IToken from './models/IToken';
 import IDashboard from './models/IDashboard';
 
 // TODO get ths info dynamically
-const ravenToken = {
+const ravenToken: IToken = {
     name: 'RavenCoin',
+    identifiers: ['raven', 'rvn', 'ravencoin'],
     averageBlockIntervalMin: 1.15,
     globalHashrateGh: 13000
 };
@@ -23,7 +24,7 @@ console.log('IN BACKGROUND');
 
 export class BackgroundComponent {
     activePool: IPool;
-    reloadIntevalSec = 10 * 1000;
+    reloadIntevalSec = 240 * 1000;
     bufferCrawlSec = 5 * 1000;
     dashboardControllerInjected = false;
 
@@ -91,7 +92,7 @@ export class BackgroundComponent {
                 chrome.tabs.reload(poolInfoTab.id, null, () => {
                     const poolCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
                         'assets/pool-info-crawler.js',
-                        pool,
+                        { pool, token: ravenToken },
                         poolInfoTab.id
                     );
                     crawlingPools.push(poolCrawlerSubscr);
@@ -271,8 +272,13 @@ export class BackgroundComponent {
     }
 
     private calcAverageBlockInterval(pool: IPool, token: IToken): number {
-        const result =
-            (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
+
+        // TODO remove this workaround with the 0.
+        // Implement solution to always get the right pool speed.
+        if (pool.speedGh === 0) {
+            pool.speedGh = 20
+        }
+        const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
 
         console.log(pool.name, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
 
