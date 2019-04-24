@@ -17,12 +17,11 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 });
 
 function findTokenRowIndex(rowList, token, colIndex) {
-  let tokenRowIndex = null;
   const tokenIdentifierList = token.identifiers;
   console.log(rowList);
 
-  for (let index = 0; index < rowList.length; index += 1) {
-    let row = rowList[index];
+  for (let tokenRowIndex = 0; tokenRowIndex < rowList.length; tokenRowIndex += 1) {
+    let row = rowList[tokenRowIndex];
     let cell = row.cells[colIndex];
     for (const tokenIdentifier of tokenIdentifierList) {
       const isTokenFoundInCell = cell.textContent.toLowerCase().includes(tokenIdentifier.toLowerCase());
@@ -36,8 +35,7 @@ function findTokenRowIndex(rowList, token, colIndex) {
       }
 
       if (isTokenFoundInCell && !shouldExcludeCell) {
-        tokenRowIndex = index;
-        console.log(index);
+        return tokenRowIndex;
       }
     }
   }
