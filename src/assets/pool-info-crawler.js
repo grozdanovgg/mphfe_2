@@ -9,8 +9,11 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
   // and get the exact cell defined by row and col
   const tokenRowIndex = findTokenRowIndex(dataContainerNode.rows, data.token, data.pool.speedColNameIndex)
   console.log(tokenRowIndex);
+  const cellNode = dataContainerNode.rows[tokenRowIndex].cells[data.pool.speedColSpeedIndex];
+  console.log(cellNode);
 
-  const speedTextGh = document.querySelector(data.pool.speedHTMLSelector).textContent;
+  const speedTextGh = cellNode.childNodes[0].data; // querySelector(data.pool.speedHTMLSelector).textContent;
+  // const speedTextGh = document.querySelector(data.pool.speedHTMLSelector).textContent;
   data.pool.speedTextGh = speedTextGh;
 
   sendResponse(data.pool);
@@ -39,16 +42,6 @@ function findTokenRowIndex(rowList, token, colIndex) {
       }
     }
   }
-  // for (const [index, row] of rowList) {
-  //   const cell = row.cells[colIndex];
-  //   for (const tokenIdentifier of tokenIdentifierList) {
-  //     const isTokenFoundInCell = cell.textContent.toLowerCase().includes(tokenIdentifier.toLowerCase());
-  //     if (isTokenFoundInCell) {
-  //       tokenRowIndex = index;
-  //       console.log(index);
-  //     }
-  //   }
-  // }
 }
 
 function findAndReplace(searchText, replacement, searchNode) {

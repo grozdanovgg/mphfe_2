@@ -31,7 +31,7 @@ export class HomepageComponent implements OnInit {
 
       speedContainerHtmlSelector: '#maintable1',
       speedColNameIndex: 1,
-      speedColSpeedIndex: 5,
+      speedColSpeedIndex: 6,
       speedUrl: 'https://cryptopool.party/site/current_results',
       speedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(4) > td:nth-child(7)'
     },
@@ -42,7 +42,7 @@ export class HomepageComponent implements OnInit {
       blockTimeHtmlSelector: '#maintable > tbody > tr:nth-child(1) > td:nth-child(3) > b > span',
 
       speedContainerHtmlSelector: '#maintable1',
-      speedColNameIndex: 0,
+      speedColNameIndex: 3,
       speedColSpeedIndex: 5,
       speedUrl: 'http://yiimp.eu/site/mining',
       speedHTMLSelector: '#maintable1 > tbody:nth-child(2) > tr:nth-child(8) > td:nth-child(6)'
