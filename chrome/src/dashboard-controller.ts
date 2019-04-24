@@ -19,8 +19,8 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
     selectAllCheckbox.click();
     assignGroupBtn.click();
 
-    const groupSelectList = document.getElementById('userGroupId');
-    const groupSaveBtn = document.getElementsByClassName('btn-save-group');
+    const groupSelectList = document.getElementById('userGroupId') as HTMLSelectElement;
+    const groupSaveBtn = document.getElementsByClassName('btn-save-group')[0] as HTMLButtonElement;
 
     console.log(groupSelectList)
     if (groupSelectList) {
@@ -29,9 +29,7 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
 
         for (let i = 0; i < groupSelectList.length; i += 1) {
 
-            console.log(groupSelectList[i].text);
-
-            if (groupSelectList[i].text.includes(groupToHop)) {
+            if ((groupSelectList[i] as HTMLOptionElement).text.includes(groupToHop)) {
                 groupToActivateIndex = i;
                 break;
             }
@@ -39,9 +37,9 @@ chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
         console.log('groupToActivateIndex', groupToActivateIndex);
         groupSelectList.options.selectedIndex = groupToActivateIndex;
 
-        if (groupSaveBtn && groupSaveBtn[0]) {
+        if (groupSaveBtn && groupSaveBtn) {
             setTimeout(() => {
-                groupSaveBtn[0].click();
+                groupSaveBtn.click();
             }, 1000);
         }
     }

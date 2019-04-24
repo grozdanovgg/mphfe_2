@@ -5,7 +5,8 @@ const { optimize } = require('webpack');
 module.exports = {
   mode: 'production',
   entry: {
-    'background-page': join(__dirname, 'chrome/src/background-page.ts')
+    'background-page': join(__dirname, 'chrome/src/background-page.ts'),
+    'block-crawler': join(__dirname, 'chrome/src/block-crawler.ts')
   },
   output: {
     path: join(__dirname, 'dist'),

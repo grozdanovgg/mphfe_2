@@ -83,7 +83,7 @@ export class BackgroundComponent {
 
                 chrome.tabs.reload(poolBlocksTab.id, null, () => {
                     const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
-                        'assets/block-crawler.js',
+                        'block-crawler.js',
                         pool,
                         poolBlocksTab.id
                     );
@@ -160,7 +160,7 @@ export class BackgroundComponent {
             .subscribe((tab: ITab) => {
                 if (!this.dashboardControllerInjected) {
                     this.injectScriptInTab(
-                        'assets/dashboard-controller.js',
+                        'dashboard-controller.js',
                         { pool, dashboardController },
                         tab.id
                     ).subscribe(() => {

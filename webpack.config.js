@@ -5,7 +5,9 @@ module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
   entry: {
-    'background-page': join(__dirname, 'chrome/src/background-page.ts')
+    'background-page': join(__dirname, 'chrome/src/background-page.ts'),
+    'block-crawler': join(__dirname, 'chrome/src/block-crawler.ts'),
+    'dashboard-controller': join(__dirname, 'chrome/src/dashboard-controller.ts')
   },
   output: {
     path: join(__dirname, 'dist/mphfe'),
