@@ -92,7 +92,7 @@ export class BackgroundComponent {
 
                 chrome.tabs.reload(poolInfoTab.id, null, () => {
                     const poolCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
-                        'assets/pool-info-crawler.js',
+                        'pool-info-crawler.js',
                         { pool, token: ravenToken },
                         poolInfoTab.id
                     );

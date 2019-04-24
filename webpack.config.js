@@ -7,7 +7,8 @@ module.exports = {
   entry: {
     'background-page': join(__dirname, 'chrome/src/background-page.ts'),
     'block-crawler': join(__dirname, 'chrome/src/block-crawler.ts'),
-    'dashboard-controller': join(__dirname, 'chrome/src/dashboard-controller.ts')
+    'dashboard-controller': join(__dirname, 'chrome/src/dashboard-controller.ts'),
+    'pool-info-crawler': join(__dirname, 'chrome/src/pool-info-crawler.ts')
   },
   output: {
     path: join(__dirname, 'dist/mphfe'),
