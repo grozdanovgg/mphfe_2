@@ -15,7 +15,7 @@
   ],
   "background": {
     "scripts": [
-      "backgroundPage.js"
+      "background-page.js"
     ],
     "persistent": false
   },
