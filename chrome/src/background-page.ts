@@ -1,9 +1,9 @@
-import ITab from '../../models/ITab';
+import ITab from '../../src/models/ITab';
 import { Observable, forkJoin } from 'rxjs';
-import IPool from '../../models/IPool';
+import IPool from '../../src/models/IPool';
 import { map } from 'rxjs/operators';
-import IToken from '../../models/IToken';
-import IDashboard from '../../models/IDashboard';
+import IToken from '../../src/models/IToken';
+import IDashboard from '../../src/models/IDashboard';
 
 // TODO get ths info dynamically
 const ravenToken: IToken = {
