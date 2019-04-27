@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import IPool from '../models/IPool';
-
-
+import IPool from 'models/IPool';
 
 @Component({
   selector: 'app-homepage',
@@ -11,7 +9,7 @@ import IPool from '../models/IPool';
 export class HomepageComponent implements OnInit {
   isHoppingActive = false;
   // TODO input pools,
-  // hard code them temporaly
+  // hard code them temporally
 
   // Currently you have to open all the pages manually for the app to work
   pools: IPool[] = [
