@@ -1,0 +1,19 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es6",
+    "module": "es2015",
+    "sourceMap": false,
+    "types": [
+      "@types/chrome"
+    ],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  }
+}

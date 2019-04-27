@@ -25,6 +25,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
+              "src/pool-scripts",
               "src/manifest.json"
             ],
             "styles": [

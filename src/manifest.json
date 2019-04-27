@@ -4,11 +4,19 @@
   "version": "0.3.0",
   "permissions": [
     "tabs",
+    "notifications",
     "activeTab",
-    "storage"
+    "storage",
+    "http://*/",
+    "https://*/",
+    "http://*/*",
+    "https://*/*",
+    "*://*/*"
   ],
   "background": {
-    "page": "index.html#/background",
+    "scripts": [
+      "background-page.js"
+    ],
     "persistent": false
   },
   "browser_action": {
