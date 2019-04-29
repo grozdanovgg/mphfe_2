@@ -5,10 +5,10 @@ const { optimize } = require('webpack');
 module.exports = {
   mode: 'production',
   entry: {
-    'background-page': join(__dirname, 'src/chrome/src/background-page.ts'),
-    'block-crawler': join(__dirname, 'src/chrome/src/block-crawler.ts'),
-    'dashboard-controller': join(__dirname, 'src/chrome/src/dashboard-controller.ts'),
-    'pool-info-crawler': join(__dirname, 'src/chrome/src/pool-info-crawler.ts')
+    'background-page': join(__dirname, 'app/chrome/src/background-page.ts'),
+    'block-crawler': join(__dirname, 'app/chrome/src/block-crawler.ts'),
+    'dashboard-controller': join(__dirname, 'app/chrome/src/dashboard-controller.ts'),
+    'pool-info-crawler': join(__dirname, 'app/chrome/src/pool-info-crawler.ts')
   },
   output: {
     path: join(__dirname, 'dist'),
@@ -19,7 +19,7 @@ module.exports = {
       {
         exclude: /node_modules/,
         test: /\.ts?$/,
-        use: 'awesome-typescript-loader?{configFileName: "src/chrome/tsconfig.json"}'
+        use: 'awesome-typescript-loader?{configFileName: "app/chrome/tsconfig.json"}'
       }
     ]
   },
