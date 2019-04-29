@@ -7,7 +7,7 @@
       "root": "",
       "sourceRoot": "app/extension/",
       "projectType": "application",
-      "prefix": "app",
+      "prefix": "mph",
       "schematics": {
         "@schematics/angular:component": {
           "style": "sass"
