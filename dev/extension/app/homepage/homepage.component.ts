@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import IPool from 'app/models/IPool';
+import IPool from 'dev/models/IPool';
 
 @Component({
   selector: 'app-homepage',

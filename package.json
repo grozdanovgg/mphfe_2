@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "npm run clean && ng build --aot & npm run build:chrome",
-    "lint": "tslint 'app/**/*.ts?(x)'",
+    "lint": "tslint 'dev/**/*.ts?(x)'",
     "clean": "rimraf dist",
     "build": "npm run lint && npm run clean && ng build --aot && npm run build:chrome",
     "build:chrome": "webpack --config webpack.config.js",
