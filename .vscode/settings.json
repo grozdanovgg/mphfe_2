@@ -1,0 +1,10 @@
+{
+    "cSpell.words": [
+        "devtool",
+        "inferrable",
+        "jasminewd",
+        "mphfe"
+    ],
+    "tslint.rulesDirectory": "./node_modules/codelyzer",
+    "typescript.tsdk": "node_modules/typescript/lib",
+}

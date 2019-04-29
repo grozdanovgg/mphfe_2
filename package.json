@@ -4,12 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "npm run clean && ng build --aot & npm run build:chrome",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e",
+    "lint": "tslint 'app/**/*.ts?(x)'",
     "clean": "rimraf dist",
+    "build": "npm run lint && npm run clean && ng build --aot && npm run build:chrome",
     "build:chrome": "webpack --config webpack.config.js",
-    "build": "npm run clean && ng build --aot && npm run build:chrome"
+    "test": "ng test",
+    "e2e": "ng e2e"
   },
   "private": true,
   "dependencies": {
@@ -36,7 +36,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
     "awesome-typescript-loader": "^5.2.1",
-    "codelyzer": "~4.5.0",
+    "codelyzer": "^5.0.1",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~3.1.1",

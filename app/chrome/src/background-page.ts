@@ -4,6 +4,7 @@ import IPool from '../../models/IPool';
 import { map } from 'rxjs/operators';
 import IToken from '../../models/IToken';
 import IDashboard from '../../models/IDashboard';
+import { OnInit } from '@angular/core';
 
 // TODO get ths info dynamically
 const ravenToken: IToken = {
@@ -23,7 +24,8 @@ const dashboardController: IDashboard = {
 
 console.log('IN BACKGROUND');
 
-export class BackgroundComponent {
+export class BackgroundComponent implements OnInit {
+
     activePool: IPool;
     reloadIntevalSec = 30 * 1000;
     bufferCrawlSec = 5 * 1000;
