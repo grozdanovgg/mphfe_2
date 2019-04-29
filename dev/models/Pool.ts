@@ -1,22 +1,25 @@
-export default interface IPool {
+import BaseEntity from './BaseEntity';
+import IConstructOptions from './IConstructOptions';
+
+export default class Pool extends BaseEntity {
     name?: string;
     lastBlockUrl?: string;
     speedUrl?: string;
-    // tabAddress?: string;
-    // lastBlockNumber?: number;
     lastBlockHTMLSelector?: string;
-    speedContainerHtmlSelector?: string,
-    speedColNameIndex?: number,
-    speedColSpeedIndex?: number,
+    speedContainerHtmlSelector?: string;
+    speedColNameIndex?: number;
+    speedColSpeedIndex?: number;
     speedHTMLSelector?: string;
     blockTimeHtmlSelector?: string;
-    // forToken?: string;
-    // active?: boolean;
     speedGh?: number;
     speedTextGh?: string;
     blockNumber?: string;
     blockTimePassedMin?: number;
     blockTimePassedText?: string;
     averageBlockIntervalMin?: number;
-    score?: number;
+    score = 0;
+
+    constructor(options: IConstructOptions) {
+        super(options);
+    }
 }

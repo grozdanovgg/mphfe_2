@@ -1,10 +1,10 @@
 import ITab from '../../models/ITab';
 import { Observable, forkJoin } from 'rxjs';
-import IPool from '../../models/IPool';
 import { map } from 'rxjs/operators';
 import IToken from '../../models/IToken';
 import IDashboard from '../../models/IDashboard';
 import { OnInit } from '@angular/core';
+import Pool from '../../models/Pool';
 
 // TODO get ths info dynamically
 const ravenToken: IToken = {
@@ -26,7 +26,7 @@ console.log('IN BACKGROUND');
 
 export class BackgroundComponent implements OnInit {
 
-    activePool: IPool;
+    activePool: Pool;
     reloadIntevalSec = 30 * 1000;
     bufferCrawlSec = 5 * 1000;
     dashboardControllerInjected = false;
@@ -45,9 +45,9 @@ export class BackgroundComponent implements OnInit {
         });
     }
 
-    private injectScripts(pools: IPool[]) {
+    private injectScripts(pools: Pool[]) {
         chrome.tabs.query({}, (tabs: ITab[]) => {
-            const crawlingPools: Observable<IPool>[] = [];
+            const crawlingPools: Observable<Pool>[] = [];
             const poolTabs: ITab[] = [];
 
             for (const pool of pools) {
@@ -84,7 +84,7 @@ export class BackgroundComponent implements OnInit {
                 // });
 
                 chrome.tabs.reload(poolBlocksTab.id, null, () => {
-                    const blockCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
+                    const blockCrawlerSubscr: Observable<Pool> = this.injectScriptInTab(
                         'block-crawler.js',
                         pool,
                         poolBlocksTab.id
@@ -93,7 +93,7 @@ export class BackgroundComponent implements OnInit {
                 });
 
                 chrome.tabs.reload(poolInfoTab.id, null, () => {
-                    const poolCrawlerSubscr: Observable<IPool> = this.injectScriptInTab(
+                    const poolCrawlerSubscr: Observable<Pool> = this.injectScriptInTab(
                         'pool-info-crawler.js',
                         { pool, token: ravenToken },
                         poolInfoTab.id
@@ -109,7 +109,7 @@ export class BackgroundComponent implements OnInit {
                         map(this.sanitizePools.bind(this))
                     )
                     .subscribe(
-                        (poolsData: { [key: string]: IPool }) => {
+                        (poolsData: { [key: string]: Pool }) => {
                             // poolsData = this.sanitizePools(poolsData);
 
                             // Best pool found
@@ -128,7 +128,7 @@ export class BackgroundComponent implements OnInit {
         });
     }
 
-    private injectScriptInTab(scriptSrc: string, data: {}, tabId): Observable<IPool> {
+    private injectScriptInTab(scriptSrc: string, data: {}, tabId): Observable<Pool> {
         return Observable.create(observer => {
             chrome.tabs.executeScript(
                 tabId,
@@ -153,7 +153,7 @@ export class BackgroundComponent implements OnInit {
         });
     }
 
-    private setActivePool(pool: IPool): any {
+    private setActivePool(pool: Pool): any {
         this.findTabWithUrl(dashboardController.url)
             // .pipe(
             //   tap((tab: ITab) => { }),
@@ -190,7 +190,7 @@ export class BackgroundComponent implements OnInit {
         });
     }
 
-    private sanitizePools(pools: { [key: string]: IPool }) {
+    private sanitizePools(pools: { [key: string]: Pool }) {
         for (const key in pools) {
             if (pools.hasOwnProperty(key)) {
                 const stringDigits = pools[key].speedTextGh.split(' ')[0];
@@ -212,7 +212,7 @@ export class BackgroundComponent implements OnInit {
         return pools;
     }
 
-    private mergeDataByPool(poolsMixedData: IPool[]): { [key: string]: IPool } {
+    private mergeDataByPool(poolsMixedData: Pool[]): { [key: string]: Pool } {
         const savedPools = {};
         for (const pool of poolsMixedData) {
             if (!savedPools[pool.name]) {
@@ -247,8 +247,8 @@ export class BackgroundComponent implements OnInit {
         }
     }
 
-    private getBestPool(pools: { [key: string]: IPool }, token: IToken): IPool {
-        let bestPool: IPool = { score: 0 };
+    private getBestPool(pools: { [key: string]: Pool }, token: IToken): Pool {
+        let bestPool: Pool;
         for (const key in pools) {
             if (pools.hasOwnProperty(key)) {
                 pools[key] = this.calcPoolScore(pools[key], token);
@@ -265,7 +265,7 @@ export class BackgroundComponent implements OnInit {
         return bestPool;
     }
 
-    private calcPoolScore(pool: IPool, token: IToken): IPool {
+    private calcPoolScore(pool: Pool, token: IToken): Pool {
         pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
         pool.score = pool.averageBlockIntervalMin / pool.blockTimePassedMin;
 
@@ -274,7 +274,7 @@ export class BackgroundComponent implements OnInit {
         return pool;
     }
 
-    private calcAverageBlockInterval(pool: IPool, token: IToken): number {
+    private calcAverageBlockInterval(pool: Pool, token: IToken): number {
 
         // TODO remove this workaround with the 0.
         // Implement solution to always get the right pool speed.
