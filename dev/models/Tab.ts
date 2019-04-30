@@ -1,7 +1,9 @@
 import { Observable, PartialObserver } from "rxjs";
 import Pool from "./Pool";
+import BaseEntity from "./BaseEntity";
+import IConstructOptions from "./IConstructOptions";
 
-export default class Tab {
+export default class Tab extends BaseEntity {
     active: boolean;
     audible: boolean;
     autoDiscardable: boolean;
@@ -20,6 +22,10 @@ export default class Tab {
     url: string;
     width: number;
     windowId: number;
+
+    constructor(options: IConstructOptions) {
+        super(options);
+    }
 
     reload(): Observable<void> {
         return Observable.create((observer: PartialObserver<void>) => {

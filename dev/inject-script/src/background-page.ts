@@ -47,12 +47,12 @@ function injectScripts(pools: Pool[]) {
             const poolTabs: Tab[] = [];
 
             for (const pool of pools) {
-                const poolBlocksTab: Tab = tabs.find(tab => {
+                const poolBlocksTab: Tab = new Tab(tabs.find(tab => {
                     return tab.url === pool.lastBlockUrl;
-                });
-                const poolInfoTab: Tab = tabs.find(tab => {
+                }));
+                const poolInfoTab: Tab = new Tab(tabs.find(tab => {
                     return tab.url === pool.speedUrl;
-                });
+                }));
 
                 if (!poolBlocksTab || !poolInfoTab) {
                     console.log('NO TAB FOUND ERR - TO HANDLE');

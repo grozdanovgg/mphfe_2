@@ -1,5 +1,4 @@
 import { Observable } from "rxjs";
-import Pool from "../../../models/Pool";
 import Tab from "../../../models/Tab";
 
 export default class ChromeService {
@@ -11,7 +10,7 @@ export default class ChromeService {
                     return tab.url === url;
                 });
                 if (tabFound) {
-                    observer.next(tabFound);
+                    observer.next(new Tab(tabFound));
                     observer.complete();
                 } else {
                     observer.error(`Tab with url ${url} not found`);
@@ -24,6 +23,7 @@ export default class ChromeService {
         return Observable.create(observer => {
             chrome.tabs.query({}, (tabs: Tab[]) => {
                 if (tabs && tabs.length) {
+                    tabs.map(tab => new Tab(tab));
                     observer.next(tabs);
                     observer.complete();
                 } else {
