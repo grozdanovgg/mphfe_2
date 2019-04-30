@@ -21,6 +21,7 @@ export default class Tab {
     width: number;
     windowId: number;
 
+
     reload(): Observable<void> {
         return Observable.create((observer: PartialObserver<void>) => {
             chrome.tabs.reload(this.id, null, () => {

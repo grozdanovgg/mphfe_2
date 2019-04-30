@@ -4,31 +4,6 @@ import Tab from "../../../models/Tab";
 
 export default class ChromeService {
 
-    // static injectScriptInTab(scriptSrc: string, data: {}, tabId): Observable<Pool> {
-    //     return Observable.create(observer => {
-    //         chrome.tabs.executeScript(
-    //             tabId,
-    //             { file: scriptSrc },
-    //             result => {
-    //                 ChromeService.sendDataToTab(tabId, data)
-    //                     .subscribe(result => {
-    //                         observer.next(result);
-    //                         observer.complete();
-    //                     })
-    //             }
-    //         );
-    //     });
-    // }
-
-    // static sendDataToTab(tabId, data: {}): Observable<void> {
-    //     return Observable.create(observer => {
-    //         chrome.tabs.sendMessage(tabId, data, response => {
-    //             observer.next(response);
-    //             observer.complete();
-    //         });
-    //     });
-    // }
-
     static getTabByUrl(url): Observable<Tab> {
         return Observable.create(observer => {
             chrome.tabs.query({}, (tabs: Tab[]) => {
