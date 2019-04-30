@@ -6,7 +6,7 @@
 // });
 
 chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
-    const groupToHop = data.pool.name;
+    const groupToHop = data.pool.id;
     const selectAllCheckbox = document.querySelector(data.dashboardController.checkboxAllRigsSelector);
     const assignGroupBtn = document.getElementById(data.dashboardController.assignGroupBtnHtmlId);
 

@@ -1,4 +1,4 @@
 export default interface IWebPage {
-    name?: string;
+    id?: string;
     url?: string;
 }

@@ -1,19 +1,19 @@
 import ITab from '../../models/ITab';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
-import IToken from '../../models/IToken';
+import Token from '../../models/Token';
 import IDashboard from '../../models/IDashboard';
 import { OnInit } from '@angular/core';
 import Pool from '../../models/Pool';
 
 // TODO get ths info dynamically
-const ravenToken: IToken = {
-    name: 'RavenCoin',
+const ravenToken: Token = new Token({
+    id: 'RavenCoin',
     identifiers: ['raven', 'rvn', 'ravencoin'],
     excludeIdentifiers: ['Dark'],
     averageBlockIntervalMin: 1.15,
     globalHashrateGh: 13000
-};
+});
 
 // TODO do not hardcode this
 const dashboardController: IDashboard = {
@@ -215,10 +215,10 @@ export class BackgroundComponent implements OnInit {
     private mergeDataByPool(poolsMixedData: Pool[]): { [key: string]: Pool } {
         const savedPools = {};
         for (const pool of poolsMixedData) {
-            if (!savedPools[pool.name]) {
-                savedPools[pool.name] = pool;
+            if (!savedPools[pool.id]) {
+                savedPools[pool.id] = pool;
             } else {
-                savedPools[pool.name] = { ...savedPools[pool.name], ...pool };
+                savedPools[pool.id] = { ...savedPools[pool.id], ...pool };
             }
         }
 
@@ -247,34 +247,34 @@ export class BackgroundComponent implements OnInit {
         }
     }
 
-    private getBestPool(pools: { [key: string]: Pool }, token: IToken): Pool {
+    private getBestPool(pools: { [key: string]: Pool }, token: Token): Pool {
         let bestPool: Pool;
         for (const key in pools) {
             if (pools.hasOwnProperty(key)) {
                 pools[key] = this.calcPoolScore(pools[key], token);
-                if (pools[key].score > bestPool.score) {
+                if (!bestPool || pools[key].score > bestPool.score) {
                     bestPool = pools[key];
                 }
             }
         }
 
         // for (const key in pools) {
-        //     console.log(pools[key].name, pools[key].score);
+        //     console.log(pools[key].id, pools[key].score);
         // }
 
         return bestPool;
     }
 
-    private calcPoolScore(pool: Pool, token: IToken): Pool {
+    private calcPoolScore(pool: Pool, token: Token): Pool {
         pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
         pool.score = pool.averageBlockIntervalMin / pool.blockTimePassedMin;
 
-        console.log(pool.name, pool.blockTimePassedMin, pool.averageBlockIntervalMin);
-        console.log(pool.name, pool.score);
+        console.log(pool.id, pool.blockTimePassedMin, pool.averageBlockIntervalMin);
+        console.log(pool.id, pool.score);
         return pool;
     }
 
-    private calcAverageBlockInterval(pool: Pool, token: IToken): number {
+    private calcAverageBlockInterval(pool: Pool, token: Token): number {
 
         // TODO remove this workaround with the 0.
         // Implement solution to always get the right pool speed.
@@ -283,7 +283,7 @@ export class BackgroundComponent implements OnInit {
         }
         const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
 
-        console.log(pool.name, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
+        console.log(pool.id, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
 
         return result;
     }

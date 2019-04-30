@@ -2,7 +2,7 @@ import BaseEntity from './BaseEntity';
 import IConstructOptions from './IConstructOptions';
 
 export default class Pool extends BaseEntity {
-    name?: string;
+    id?: string;
     lastBlockUrl?: string;
     speedUrl?: string;
     lastBlockHTMLSelector?: string;

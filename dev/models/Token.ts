@@ -1,10 +1,11 @@
-import IPool from './IPool';
+import Pool from './Pool';
+import BaseEntity from './BaseEntity';
 
-export default interface IToken {
+export default class Token extends BaseEntity {
     name: string;
     identifiers?: string[]
     excludeIdentifiers?: string[];
-    pools?: IPool[];
+    pools?: Pool[];
     averageBlockIntervalMin: number;
     globalHashrateGh: number;
 }
