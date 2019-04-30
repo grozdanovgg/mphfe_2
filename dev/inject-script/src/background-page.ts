@@ -1,10 +1,11 @@
-import ITab from '../../models/ITab';
 import { Observable, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import Token from '../../models/Token';
-import IDashboard from '../../models/IDashboard';
-import { OnInit } from '@angular/core';
+import Dashboard from '../../models/Dashboard';
 import Pool from '../../models/Pool';
+import Tab from '../../models/Tab';
+import ChromeService from './services/chrome';
+import Scoring from './services/scoring';
 
 // TODO get ths info dynamically
 const ravenToken: Token = new Token({
@@ -16,45 +17,41 @@ const ravenToken: Token = new Token({
 });
 
 // TODO do not hardcode this
-const dashboardController: IDashboard = {
+const dashboardController = new Dashboard({
     url: 'https://simplemining.net/account/rigs',
     checkboxAllRigsSelector: '#data-table-rigs > thead > tr > th:nth-child(1) > div.th-inner > input',
     assignGroupBtnHtmlId: 'buttonUserGroup'
-};
+});
 
 console.log('IN BACKGROUND');
 
-export class BackgroundComponent implements OnInit {
+let activePool: Pool;
+let reloadIntervalSec = 30 * 1000;
+let bufferCrawlSec = 5 * 1000;
+let dashboardControllerInjected = false;
 
-    activePool: Pool;
-    reloadIntevalSec = 30 * 1000;
-    bufferCrawlSec = 5 * 1000;
-    dashboardControllerInjected = false;
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.inject) {
+        injectScripts(message.inject);
 
-    constructor() { }
-
-    ngOnInit() {
-        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            if (message.inject) {
-                this.injectScripts(message.inject);
-
-                setInterval(() => {
-                    this.injectScripts(message.inject);
-                }, this.reloadIntevalSec);
-            }
-        });
+        setInterval(() => {
+            injectScripts(message.inject);
+        }, reloadIntervalSec);
     }
+});
 
-    private injectScripts(pools: Pool[]) {
-        chrome.tabs.query({}, (tabs: ITab[]) => {
+function injectScripts(pools: Pool[]) {
+
+    ChromeService.getTabs()
+        .subscribe((tabs: Tab[]) => {
             const crawlingPools: Observable<Pool>[] = [];
-            const poolTabs: ITab[] = [];
+            const poolTabs: Tab[] = [];
 
             for (const pool of pools) {
-                const poolBlocksTab: ITab = tabs.find(tab => {
+                const poolBlocksTab: Tab = tabs.find(tab => {
                     return tab.url === pool.lastBlockUrl;
                 });
-                const poolInfoTab: ITab = tabs.find(tab => {
+                const poolInfoTab: Tab = tabs.find(tab => {
                     return tab.url === pool.speedUrl;
                 });
 
@@ -83,20 +80,23 @@ export class BackgroundComponent implements OnInit {
                 //     console.log(result);
                 // });
 
+                poolBlocksTab.reload()
+                    .subscribe(() => {
+                        const blockCrawlerSubscr: Observable<Pool> = poolBlocksTab.injectScript(
+                            'block-crawler.js',
+                            pool
+                        );
+                        crawlingPools.push(blockCrawlerSubscr);
+                    });
+
                 chrome.tabs.reload(poolBlocksTab.id, null, () => {
-                    const blockCrawlerSubscr: Observable<Pool> = this.injectScriptInTab(
-                        'block-crawler.js',
-                        pool,
-                        poolBlocksTab.id
-                    );
-                    crawlingPools.push(blockCrawlerSubscr);
+
                 });
 
                 chrome.tabs.reload(poolInfoTab.id, null, () => {
-                    const poolCrawlerSubscr: Observable<Pool> = this.injectScriptInTab(
+                    const poolCrawlerSubscr: Observable<Pool> = poolInfoTab.injectScript(
                         'pool-info-crawler.js',
-                        { pool, token: ravenToken },
-                        poolInfoTab.id
+                        { pool, token: ravenToken }
                     );
                     crawlingPools.push(poolCrawlerSubscr);
                 });
@@ -105,188 +105,104 @@ export class BackgroundComponent implements OnInit {
             setTimeout(() => {
                 forkJoin(crawlingPools)
                     .pipe(
-                        map(this.mergeDataByPool.bind(this)),
-                        map(this.sanitizePools.bind(this))
+                        map(mergeDataByPool.bind(this)),
+                        map(sanitizePools.bind(this))
                     )
                     .subscribe(
                         (poolsData: { [key: string]: Pool }) => {
-                            // poolsData = this.sanitizePools(poolsData);
+                            // poolsData = sanitizePools(poolsData);
 
                             // Best pool found
-                            const bestPool = this.getBestPool(poolsData, ravenToken);
+                            const bestPool = Scoring.getBestPool(poolsData, ravenToken);
                             console.log(bestPool);
-                            if (bestPool !== this.activePool) {
-                                this.setActivePool(bestPool);
-                                this.activePool = bestPool;
+                            if (bestPool !== activePool) {
+                                setActivePool(bestPool);
+                                activePool = bestPool;
                             }
                         },
                         error => {
                             console.log(error);
                         }
                     );
-            }, this.bufferCrawlSec);
+            }, bufferCrawlSec);
         });
-    }
-
-    private injectScriptInTab(scriptSrc: string, data: {}, tabId): Observable<Pool> {
-        return Observable.create(observer => {
-            chrome.tabs.executeScript(
-                tabId,
-                { file: scriptSrc },
-                result => {
-                    this.sendDataToTab(tabId, data)
-                        .subscribe(result => {
-                            observer.next(result);
-                            observer.complete();
-                        })
-                }
-            );
-        });
-    }
-
-    private sendDataToTab(tabId, data: {}): Observable<void> {
-        return Observable.create(observer => {
-            chrome.tabs.sendMessage(tabId, data, response => {
-                observer.next(response);
-                observer.complete();
-            });
-        });
-    }
-
-    private setActivePool(pool: Pool): any {
-        this.findTabWithUrl(dashboardController.url)
-            // .pipe(
-            //   tap((tab: ITab) => { }),
-            //   tap(() => { })
-            // )
-            .subscribe((tab: ITab) => {
-                if (!this.dashboardControllerInjected) {
-                    this.injectScriptInTab(
-                        'dashboard-controller.js',
-                        { pool, dashboardController },
-                        tab.id
-                    ).subscribe(() => {
-                        this.dashboardControllerInjected = true;
-                    });
-                } else {
-                    this.sendDataToTab(tab.id, { pool, dashboardController });
-                }
-            });
-    }
-
-    private findTabWithUrl(url): Observable<ITab> {
-        return Observable.create(observer => {
-            chrome.tabs.query({}, (tabs: ITab[]) => {
-                const tabFound: ITab = tabs.find(tab => {
-                    return tab.url === url;
-                });
-                if (tabFound) {
-                    observer.next(tabFound);
-                    observer.complete();
-                } else {
-                    observer.error(`Tab with url ${url} not found`);
-                }
-            });
-        });
-    }
-
-    private sanitizePools(pools: { [key: string]: Pool }) {
-        for (const key in pools) {
-            if (pools.hasOwnProperty(key)) {
-                const stringDigits = pools[key].speedTextGh.split(' ')[0];
-                pools[key].speedGh = +stringDigits;
-
-                if (pools[key].blockTimePassedText) {
-                    const timeNumber = +pools[key].blockTimePassedText.match(/\d+/)[0];
-                    const timePeriod =
-                        pools[key].blockTimePassedText[
-                        pools[key].blockTimePassedText.length - 1
-                        ];
-                    const multiplier = this.getTimeMultiplier(timePeriod);
-                    pools[key].blockTimePassedMin = timeNumber * multiplier;
-                } else {
-                    pools[key].blockTimePassedMin = 0;
-                }
-            }
-        }
-        return pools;
-    }
-
-    private mergeDataByPool(poolsMixedData: Pool[]): { [key: string]: Pool } {
-        const savedPools = {};
-        for (const pool of poolsMixedData) {
-            if (!savedPools[pool.id]) {
-                savedPools[pool.id] = pool;
-            } else {
-                savedPools[pool.id] = { ...savedPools[pool.id], ...pool };
-            }
-        }
-
-        return savedPools;
-    }
-
-    private getTimeMultiplier(timePeriod: string) {
-        switch (timePeriod) {
-            case '2':
-                return 7 * 24 * 60;
-
-            case 'd':
-                return 24 * 60;
-
-            case 'h':
-                return 60;
-
-            case 'm':
-                return 1;
-
-            case 's':
-                return 0.0167;
-
-            default:
-                return 0;
-        }
-    }
-
-    private getBestPool(pools: { [key: string]: Pool }, token: Token): Pool {
-        let bestPool: Pool;
-        for (const key in pools) {
-            if (pools.hasOwnProperty(key)) {
-                pools[key] = this.calcPoolScore(pools[key], token);
-                if (!bestPool || pools[key].score > bestPool.score) {
-                    bestPool = pools[key];
-                }
-            }
-        }
-
-        // for (const key in pools) {
-        //     console.log(pools[key].id, pools[key].score);
-        // }
-
-        return bestPool;
-    }
-
-    private calcPoolScore(pool: Pool, token: Token): Pool {
-        pool.averageBlockIntervalMin = this.calcAverageBlockInterval(pool, token);
-        pool.score = pool.averageBlockIntervalMin / pool.blockTimePassedMin;
-
-        console.log(pool.id, pool.blockTimePassedMin, pool.averageBlockIntervalMin);
-        console.log(pool.id, pool.score);
-        return pool;
-    }
-
-    private calcAverageBlockInterval(pool: Pool, token: Token): number {
-
-        // TODO remove this workaround with the 0.
-        // Implement solution to always get the right pool speed.
-        if (pool.speedGh === 0) {
-            pool.speedGh = 20
-        }
-        const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
-
-        console.log(pool.id, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
-
-        return result;
-    }
+    chrome.tabs.query({}, (tabs: Tab[]) => {
+    });
 }
 
-new BackgroundComponent().ngOnInit();
+function setActivePool(pool: Pool): any {
+    ChromeService.getTabByUrl(dashboardController.url)
+        // .pipe(
+        //   tap((tab: Tab) => { }),
+        //   tap(() => { })
+        // )
+        .subscribe((tab: Tab) => {
+            if (!dashboardControllerInjected) {
+                tab.injectScript(
+                    'dashboard-controller.js',
+                    { pool, dashboardController }
+                ).subscribe(() => {
+                    dashboardControllerInjected = true;
+                });
+            } else {
+                tab.sendData({ pool, dashboardController });
+            }
+        });
+}
+
+function sanitizePools(pools: { [key: string]: Pool }) {
+    for (const key in pools) {
+        if (pools.hasOwnProperty(key)) {
+            const stringDigits = pools[key].speedTextGh.split(' ')[0];
+            pools[key].speedGh = +stringDigits;
+
+            if (pools[key].blockTimePassedText) {
+                const timeNumber = +pools[key].blockTimePassedText.match(/\d+/)[0];
+                const timePeriod =
+                    pools[key].blockTimePassedText[
+                    pools[key].blockTimePassedText.length - 1
+                    ];
+                const multiplier = getTimeMultiplier(timePeriod);
+                pools[key].blockTimePassedMin = timeNumber * multiplier;
+            } else {
+                pools[key].blockTimePassedMin = 0;
+            }
+        }
+    }
+    return pools;
+}
+
+function mergeDataByPool(poolsMixedData: Pool[]): { [key: string]: Pool } {
+    const savedPools = {};
+    for (const pool of poolsMixedData) {
+        if (!savedPools[pool.id]) {
+            savedPools[pool.id] = pool;
+        } else {
+            savedPools[pool.id] = { ...savedPools[pool.id], ...pool };
+        }
+    }
+
+    return savedPools;
+}
+
+function getTimeMultiplier(timePeriod: string) {
+    switch (timePeriod) {
+        case '2':
+            return 7 * 24 * 60;
+
+        case 'd':
+            return 24 * 60;
+
+        case 'h':
+            return 60;
+
+        case 'm':
+            return 1;
+
+        case 's':
+            return 0.0167;
+
+        default:
+            return 0;
+    }
+}
