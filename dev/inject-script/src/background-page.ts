@@ -41,7 +41,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function injectScripts(pools: Pool[]) {
-
     ChromeService.getTabs()
         .subscribe((tabs: Tab[]) => {
             const crawlingPools: Observable<Pool>[] = [];
@@ -82,24 +81,19 @@ function injectScripts(pools: Pool[]) {
 
                 poolBlocksTab.reload()
                     .subscribe(() => {
-                        const blockCrawlerSubscr: Observable<Pool> = poolBlocksTab.injectScript(
-                            'block-crawler.js',
-                            pool
-                        );
+                        const blockCrawlerSubscr: Observable<Pool> = poolBlocksTab
+                            .injectScript('block-crawler.js', pool);
+
                         crawlingPools.push(blockCrawlerSubscr);
                     });
 
-                chrome.tabs.reload(poolBlocksTab.id, null, () => {
+                poolInfoTab.reload()
+                    .subscribe(() => {
+                        const poolCrawlerSubscr: Observable<Pool> = poolInfoTab
+                            .injectScript('pool-info-crawler.js', { pool, token: ravenToken });
 
-                });
-
-                chrome.tabs.reload(poolInfoTab.id, null, () => {
-                    const poolCrawlerSubscr: Observable<Pool> = poolInfoTab.injectScript(
-                        'pool-info-crawler.js',
-                        { pool, token: ravenToken }
-                    );
-                    crawlingPools.push(poolCrawlerSubscr);
-                });
+                        crawlingPools.push(poolCrawlerSubscr);
+                    });
             }
 
             setTimeout(() => {
@@ -126,16 +120,10 @@ function injectScripts(pools: Pool[]) {
                     );
             }, bufferCrawlSec);
         });
-    chrome.tabs.query({}, (tabs: Tab[]) => {
-    });
 }
 
 function setActivePool(pool: Pool): any {
     ChromeService.getTabByUrl(dashboardController.url)
-        // .pipe(
-        //   tap((tab: Tab) => { }),
-        //   tap(() => { })
-        // )
         .subscribe((tab: Tab) => {
             if (!dashboardControllerInjected) {
                 tab.injectScript(

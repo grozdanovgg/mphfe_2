@@ -37,7 +37,7 @@ export default class Tab {
                 { file: scriptSrc },
                 result => {
                     this.sendData(data)
-                        .subscribe(result => {
+                        .subscribe((result: Pool) => {
                             observer.next(result);
                             observer.complete();
                         })
@@ -46,9 +46,9 @@ export default class Tab {
         });
     }
 
-    sendData(data: {}): Observable<void> {
+    sendData(data: {}): Observable<Pool> {
         return Observable.create(observer => {
-            chrome.tabs.sendMessage(this.id, data, response => {
+            chrome.tabs.sendMessage(this.id, data, (response: Pool) => {
                 observer.next(response);
                 observer.complete();
             });
