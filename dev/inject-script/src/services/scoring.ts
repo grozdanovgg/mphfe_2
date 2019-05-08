@@ -13,10 +13,6 @@ export default class Scoring {
             }
         }
 
-        // for (const key in pools) {
-        //     console.log(pools[key].id, pools[key].score);
-        // }
-
         return bestPool;
     }
 
@@ -30,15 +26,11 @@ export default class Scoring {
     }
 
     private static calcAverageBlockInterval(pool: Pool, token: Token): number {
-
-        // TODO remove this workaround with the 0.
-        // Implement solution to always get the right pool speed.
-        if (pool.speedGh === 0) {
-            pool.speedGh = 20
-        }
         const result = (token.globalHashrateGh * token.averageBlockIntervalMin) / pool.speedGh;
 
-        console.log(pool.id, 'Average Block Interval', token.globalHashrateGh, token.averageBlockIntervalMin, pool.speedGh);
+        console.log(pool.id, 'Token global hashrate', token.globalHashrateGh);
+        console.log(pool.id, 'Token Average Block Interval Min', token.averageBlockIntervalMin);
+        console.log(pool.id, 'Pool speed GH', pool.speedGh);
 
         return result;
     }
