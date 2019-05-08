@@ -1,5 +1,5 @@
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, forkJoin, Subscription } from 'rxjs';
+import { map, concatMap, find, mergeMap } from 'rxjs/operators';
 import Token from '../../models/Token';
 import Dashboard from '../../models/Dashboard';
 import Pool from '../../models/Pool';
@@ -20,6 +20,7 @@ const ravenToken: Token = new Token({
 const dashboardController = new Dashboard({
     url: 'https://simplemining.net/account/rigs',
     checkboxAllRigsSelector: '#data-table-rigs > thead > tr > th:nth-child(1) > div.th-inner > input',
+    groupConfigSelectedSelector: '#data-table-rigs > tbody > tr.danger > td:nth-child(4)',
     assignGroupBtnHtmlId: 'buttonUserGroup'
 });
 
@@ -32,20 +33,19 @@ let dashboardControllerInjected = false;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.inject) {
-        injectScripts(message.inject);
+        onStartClick(message.inject);
 
         setInterval(() => {
-            injectScripts(message.inject);
+            onStartClick(message.inject);
         }, reloadIntervalSec);
     }
 });
 
-function injectScripts(pools: Pool[]) {
+
+function onStartClick(pools: Pool[]): void {
     ChromeService.getTabs()
         .subscribe((tabs: Tab[]) => {
             const crawlingPools: Observable<Pool>[] = [];
-            const poolTabs: Tab[] = [];
-
             for (const pool of pools) {
                 const poolBlocksTab: Tab = new Tab(tabs.find(tab => {
                     return tab.url === pool.lastBlockUrl;
@@ -104,11 +104,30 @@ function injectScripts(pools: Pool[]) {
                     )
                     .subscribe(
                         (poolsData: { [key: string]: Pool }) => {
-                            // poolsData = sanitizePools(poolsData);
-
-                            // Best pool found
                             const bestPool = Scoring.getBestPool(poolsData, ravenToken);
                             console.log(bestPool);
+
+                            getActivePoolGroup()
+                                .subscribe(activePoolGroupName => {
+
+                                    // TODO CONTINUE HERE
+                                    // To set best pool here if needed
+
+                                    // const bestPool = Scoring.getBestPool(poolsData, ravenToken);
+                                    // console.log(bestPool);
+                                    // const activePoolChanged = !activePoolGroupName.includes(bestPool.id);
+                                    console.log(activePoolGroupName);
+                                    // console.log(activePoolChanged);
+
+                                    // if (activePoolChanged) {
+
+                                    //     setActivePool(bestPool);
+                                    // }
+                                    //         },
+                                    //         error => {
+                                    //             console.log(error);
+                                });
+
                             if (bestPool !== activePool) {
                                 setActivePool(bestPool);
                                 activePool = bestPool;
@@ -122,7 +141,39 @@ function injectScripts(pools: Pool[]) {
         });
 }
 
-function setActivePool(pool: Pool): any {
+function getActivePoolGroup(): Observable<string> {
+    console.log('Getting Active Pool');
+    return ChromeService.getTabByUrl(dashboardController.url)
+        .pipe(
+            mergeMap(
+                (tab: Tab, index: number) => {
+                    console.log('Tab found', tab);
+                    console.log('dashboardControllerInjected:', dashboardControllerInjected);
+                    if (!dashboardControllerInjected) {
+                        console.log('injecting script');
+                        return tab.injectScript(
+                            'dashboard-controller.js',
+                            { dashboardController, checkActive: true }
+                        ).pipe(
+                            mergeMap(
+                                (value: Pool, index: number) => {
+                                    dashboardControllerInjected = true;
+                                    return tab.sendData({ dashboardController, checkActive: true });
+                                }
+                            )
+                        );
+                    } else {
+                        console.log('sending data');
+
+                        return tab.sendData({ dashboardController, checkActive: true });
+                    }
+                    // return tab.sendData({ dashboardController, checkActive: true });
+                }
+            )
+        );
+}
+
+function setActivePool(pool: Pool): void {
     ChromeService.getTabByUrl(dashboardController.url)
         .subscribe((tab: Tab) => {
             if (!dashboardControllerInjected) {
@@ -131,6 +182,7 @@ function setActivePool(pool: Pool): any {
                     { pool, dashboardController }
                 ).subscribe(() => {
                     dashboardControllerInjected = true;
+                    tab.sendData({ pool, dashboardController });
                 });
             } else {
                 tab.sendData({ pool, dashboardController });
@@ -138,7 +190,7 @@ function setActivePool(pool: Pool): any {
         });
 }
 
-function sanitizePools(pools: { [key: string]: Pool }) {
+function sanitizePools(pools: { [key: string]: Pool }): { [key: string]: Pool } {
     for (const key in pools) {
         if (pools.hasOwnProperty(key)) {
             const stringDigits = pools[key].speedTextGh.split(' ')[0];
@@ -173,7 +225,7 @@ function mergeDataByPool(poolsMixedData: Pool[]): { [key: string]: Pool } {
     return savedPools;
 }
 
-function getTimeMultiplier(timePeriod: string) {
+function getTimeMultiplier(timePeriod: string): number {
     switch (timePeriod) {
         case '2':
             return 7 * 24 * 60;

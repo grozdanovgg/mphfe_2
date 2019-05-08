@@ -5,43 +5,57 @@
 //     console.log(checkboxAllRigsSelector);
 // });
 
+console.log('Injected');
+
 chrome.runtime.onMessage.addListener((data, sender, sendResponse) => {
-    const groupToHop = data.pool.id;
-    const selectAllCheckbox = document.querySelector(data.dashboardController.checkboxAllRigsSelector);
-    const assignGroupBtn = document.getElementById(data.dashboardController.assignGroupBtnHtmlId);
+    console.log('On message', data, sender, sendResponse);
 
-    // handle bug, that when returning from group selection modal, the checkbox remains clicked
-    // but it should not be. So uncheck it first.
-    if (selectAllCheckbox && selectAllCheckbox.checked) {
+    if (data.pool && data.dashboardController) {
+        // on change active pool message
+        const groupToHop = data.pool.id;
+        const selectAllCheckbox = document.querySelector(data.dashboardController.checkboxAllRigsSelector);
+        const assignGroupBtn = document.getElementById(data.dashboardController.assignGroupBtnHtmlId);
+
+        // handle bug, that when returning from group selection modal, the checkbox remains clicked
+        // but it should not be. So uncheck it first.
+        if (selectAllCheckbox && selectAllCheckbox.checked) {
+            selectAllCheckbox.click();
+        }
+
         selectAllCheckbox.click();
-    }
+        assignGroupBtn.click();
 
-    selectAllCheckbox.click();
-    assignGroupBtn.click();
+        const groupSelectList = document.getElementById('userGroupId') as HTMLSelectElement;
+        const groupSaveBtn = document.getElementsByClassName('btn-save-group')[0] as HTMLButtonElement;
 
-    const groupSelectList = document.getElementById('userGroupId') as HTMLSelectElement;
-    const groupSaveBtn = document.getElementsByClassName('btn-save-group')[0] as HTMLButtonElement;
+        console.log(groupSelectList)
+        if (groupSelectList) {
 
-    console.log(groupSelectList)
-    if (groupSelectList) {
+            let groupToActivateIndex;
 
-        let groupToActivateIndex;
+            for (let i = 0; i < groupSelectList.length; i += 1) {
 
-        for (let i = 0; i < groupSelectList.length; i += 1) {
+                if ((groupSelectList[i] as HTMLOptionElement).text.includes(groupToHop)) {
+                    groupToActivateIndex = i;
+                    break;
+                }
+            }
+            console.log('groupToActivateIndex', groupToActivateIndex);
+            groupSelectList.options.selectedIndex = groupToActivateIndex;
 
-            if ((groupSelectList[i] as HTMLOptionElement).text.includes(groupToHop)) {
-                groupToActivateIndex = i;
-                break;
+            if (groupSaveBtn && groupSaveBtn) {
+                setTimeout(() => {
+                    groupSaveBtn.click();
+                }, 1000);
             }
         }
-        console.log('groupToActivateIndex', groupToActivateIndex);
-        groupSelectList.options.selectedIndex = groupToActivateIndex;
-
-        if (groupSaveBtn && groupSaveBtn) {
-            setTimeout(() => {
-                groupSaveBtn.click();
-            }, 1000);
-        }
+    } else if (data.checkActive) {
+        // on checkActive message
+        const activeGroupEl = document.querySelector(data.dashboardController.groupConfigSelectedSelector) as HTMLTableCellElement;
+        const activeGroupName = activeGroupEl.innerText;
+        console.log('activeGroupEl', activeGroupEl);
+        console.log('activeGroupName', activeGroupName);
+        sendResponse(activeGroupName);
     }
 });
 

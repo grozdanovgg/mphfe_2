@@ -51,13 +51,14 @@ export default class Tab extends BaseEntity {
             );
         });
     }
-
     sendData(data: {}): Observable<any> {
         return Observable.create(observer => {
             chrome.tabs.sendMessage(this.id, data, (response: any) => {
+                console.log('tab:', this);
+                console.log('tab response:', response);
                 // if (response) {
                 observer.next(response);
-                observer.complete();
+                // observer.complete();
                 // } else {
                 //     observer.error();
                 // }
